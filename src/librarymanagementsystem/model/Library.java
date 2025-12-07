@@ -1,116 +1,62 @@
 package librarymanagementsystem.model;
 
-import librarymanagementsystem.enums.BookState;
 import librarymanagementsystem.exception.BookNotFoundException;
-import librarymanagementsystem.exception.MissingParametersException;
+import librarymanagementsystem.generic.GenericLinkedList;
+import librarymanagementsystem.generic.Node;
 
 public class Library {
 
-    private Book[] books;
+    private GenericLinkedList<Book> books;
     private int count;
 
     public Library(int capacity) {
-        this.books = new Book[capacity];
+        this.books = new GenericLinkedList<>();
         this.count = 0;
     }
 
-    public Book[] getBooks() {
-        return books;
-    }
-
     public void addBook(Book book) {
-        validate(book);
-
-        int filledCount = getFilledCount();
-        raiseLibraryCapacity(filledCount);
-
-        books[count] = book;
+        books.add(book);
         count++;
+        System.out.println(book.getTitle() + " added to library successfully");
     }
 
-    public void validate(Book book) {
-        if (book != null && book.getTitle() == null || book.getAuthor() == null)
-            throw new MissingParametersException("Title or Author can not be null!");
+    public void displayBooks() {
+        books.display();
     }
 
-    public void raiseLibraryCapacity(int filledCount) {
+    public void removeBookByTitle(String title) {
 
-        if (filledCount * 2 > books.length) {
-            int newSize = books.length * 2;
-            Book[] temp = new Book[newSize];
-            for (int i = 0; i < books.length; i++) {
-                temp[i] = books[i];
-            }
-            books = temp;
-        }
-    }
+        if (books.getHead() == null)
+            throw new BookNotFoundException("There is no book in the library to remove!");
 
-    public int getFilledCount() {
-        int filledCount = 0;
-        for (Book book : books) {
-            if (book != null)
-                filledCount++;
-        }
+        Node<Book> current = books.getHead();
+        Node<Book> previous = null;
 
-        return filledCount;
-    }
+        while (current != null) {
+            Book currentBook = current.getData();
 
-    public void removeBook(Book book) {
-        for (int i = 0; i < count; i++) {
-            if (books[i].equals(book)) {
-                for (int j = i; j < count - 1; j++) {
-                    books[j] = books[j + 1];
-                }
-                books[count - 1] = null;
+            if (currentBook.getTitle().equals(title)) {
+
+                if (previous == null)
+                    books.setHead(current.getNext());
+                else
+                    previous.setNext(current.getNext());
+
                 count--;
+                System.out.println("The book with title " + title + " has been removed successfully");
                 return;
             }
+
+            previous = current;
+            current = current.getNext();
         }
 
-        throw new BookNotFoundException(book.getTitle() + " book doesn't exist!");
+        throw new BookNotFoundException("The book with title " + title + " was not found!");
     }
 
-    public void updateBook(String currentTittle, String newAuthor,
-                           Integer yearOfPublication, BookState bookState) {
-
-        for (int i = 0; i < count; i++) {
-            if (books[i].getTitle().equals(currentTittle)) {
-                if (newAuthor != null)
-                    books[i].setAuthor(newAuthor);
-                if (yearOfPublication != null)
-                    books[i].setYearOfPublication(yearOfPublication);
-                if (bookState != null)
-                    books[i].setState(bookState);
-            }
-        }
-    }
-
-    public Book getBookByTitleOrAuthor(String title, String author) {
-        for (int i = 0; i < count; i++) {
-            if (books[i].getTitle().equals(title) || books[i].getAuthor().equals(author)) {
-                return books[i];
-            }
-        }
-
-        throw new BookNotFoundException("There is no book with the given title or author!");
-    }
-
-    public void sortByYearOfPublication() {
-
-        for (int i = 0; i < count - 1; i++) {
-            int minIndex = i;
-            for (int j = i + 1; j < count; j++) {
-                if (books[j] != null && books[minIndex] != null &&
-                        books[j].getYearOfPublication() < books[minIndex].getYearOfPublication()) {
-                    minIndex = j;
-                }
-            }
-
-            if (minIndex != i) {
-                Book temp = books[i];
-                books[i] = books[minIndex];
-                books[minIndex] = temp;
-            }
-        }
+    public void remove(Book book) {
+        books.remove(book);
+        count--;
+        System.out.println("The book with title " + book.getTitle() + " has been removed successfully");
     }
 }

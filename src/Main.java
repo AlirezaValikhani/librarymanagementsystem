@@ -1,56 +1,55 @@
 import librarymanagementsystem.enums.BookState;
 import librarymanagementsystem.model.Book;
 import librarymanagementsystem.model.Library;
+import librarymanagementsystem.exception.BookNotFoundException;
 
 public class Main {
     public static void main(String[] args) {
 
-        Library library = new Library(2);
-        Book book = new Book("new", "Victor Hogo",
-                1951, BookState.EXIST);
+        System.out.println("--- Start testing the library management system ---");
+        Library library = new Library(100);
 
-        Book newBook = new Book("otherBook", "Will Dorant",
-                1943, BookState.BORROWED);
+        Book book1 = new Book("Data structure", "Saeed Shahrivari", 2010, BookState.EXIST);
+        Book book2 = new Book("Java", "Amery", 2021, BookState.BORROWED);
+        Book book3 = new Book("AI", "Josef", 2024, BookState.BANNED);
+        Book book4 = new Book("Remove mothed", "Mohammad", 2020, BookState.EXIST);
 
-        Book book2 = new Book("something", "fdsa",
-                1930, BookState.BANNED);
-
-        System.out.println("-----------Add and sort book test------------\n");
-
-        library.addBook(newBook);
+        library.addBook(book1);
         library.addBook(book2);
-        library.addBook(book);
+        library.addBook(book3);
+        library.addBook(book4);
 
-        library.sortByYearOfPublication();
+        System.out.println("\n--- Test remove method of GenericLinkedList ---");
+        library.remove(book4);
 
-        for (Book b : library.getBooks()) {
-            System.out.println(b);
+        System.out.println("\n--- Show the list ---");
+        library.displayBooks();
+
+        System.out.println("\n--- Removing Java book ---");
+        try {
+            library.removeBookByTitle("Java");
+        } catch (BookNotFoundException e) {
+            System.err.println("Error : " + e.getMessage());
         }
 
-        System.out.println();
-        System.out.println("-----------Update book test------------\n");
+        System.out.println("\n--- Show list after removing middle book ---");
+        library.displayBooks();
 
-        System.out.println("Old book data: " + book);
-        library.updateBook("new", "Nima Youshij", 1960, BookState.BORROWED);
-
-        for (Book b : library.getBooks()) {
-            if (b != null && b.getTitle().equals("new"))
-                System.out.println("Updated book data: " + b + "\n");
+        System.out.println("\n--- Removing First book (Head) ---");
+        try {
+            library.removeBookByTitle("Data structure");
+        } catch (BookNotFoundException e) {
+            System.err.println("Error : " + e.getMessage());
         }
 
-        System.out.println("-----------Remove book test------------\n");
+        System.out.println("\n--- Show list after removing Head ---");
+        library.displayBooks();
 
-        library.removeBook(book);
-
-        for (Book b : library.getBooks()) {
-            System.out.println(b);
+        System.out.println("\n--- Delete not exist book ---");
+        try {
+            library.removeBookByTitle("System design");
+        } catch (BookNotFoundException e) {
+            System.err.println("Error : " + e.getMessage());
         }
-
-        System.out.println();
-        System.out.println("-----------Search book by title or author test------------\n");
-
-        Book foundedBook = library.getBookByTitleOrAuthor("otherBook", "Will Dorant");
-
-        System.out.println("Founded book is : " + foundedBook);
     }
 }
