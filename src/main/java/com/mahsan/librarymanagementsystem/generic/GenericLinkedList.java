@@ -71,4 +71,8 @@ public class GenericLinkedList<T> {
             current = current.next;
         }
     }
+
+    public boolean isEmpty() {
+        return head == null;
+    }
 }

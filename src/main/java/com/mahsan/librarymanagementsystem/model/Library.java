@@ -9,7 +9,7 @@ public class Library {
     private GenericLinkedList<Book> books;
     private int count;
 
-    public Library(int capacity) {
+    public Library() {
         this.books = new GenericLinkedList<>();
         this.count = 0;
     }
@@ -58,5 +58,9 @@ public class Library {
         books.remove(book);
         count--;
         System.out.println("The book with title " + book.getTitle() + " has been removed successfully.");
+    }
+
+    public int countBooks() {
+        return count;
     }
 }

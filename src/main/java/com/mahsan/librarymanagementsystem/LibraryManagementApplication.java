@@ -10,7 +10,7 @@ import java.util.Scanner;
 
 public class LibraryManagementApplication {
     public static void main(String[] args) {
-        Library library = new Library(100);
+        Library library = new Library();
         FileHandler fileHandler = new FileHandler();
         Scanner scanner = new Scanner(System.in);
         boolean runningFlag = true;
