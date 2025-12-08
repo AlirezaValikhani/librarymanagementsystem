@@ -43,7 +43,7 @@ public class Library {
                     previous.setNext(current.getNext());
 
                 count--;
-                System.out.println("The book with title " + title + " has been removed successfully");
+                System.out.println("The book with title " + title + " has been removed successfully.");
                 return;
             }
 
@@ -57,6 +57,6 @@ public class Library {
     public void remove(Book book) {
         books.remove(book);
         count--;
-        System.out.println("The book with title " + book.getTitle() + " has been removed successfully");
+        System.out.println("The book with title " + book.getTitle() + " has been removed successfully.");
     }
 }
