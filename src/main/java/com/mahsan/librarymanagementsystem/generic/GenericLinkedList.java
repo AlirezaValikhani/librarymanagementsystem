@@ -12,10 +12,6 @@ public class GenericLinkedList<T> {
         return head;
     }
 
-    public void setHead(Node<T> newHead) {
-        this.head = newHead;
-    }
-
     public void add(T data) {
         Node<T> newNode = new Node<>(data);
 

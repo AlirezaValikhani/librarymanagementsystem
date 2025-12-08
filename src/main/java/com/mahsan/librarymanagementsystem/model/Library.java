@@ -30,24 +30,20 @@ public class Library {
             throw new BookNotFoundException("There is no book in the library to remove!");
 
         Node<Book> current = books.getHead();
-        Node<Book> previous = null;
 
         while (current != null) {
             Book currentBook = current.getData();
 
             if (currentBook.getTitle().equals(title)) {
 
-                if (previous == null)
-                    books.setHead(current.getNext());
-                else
-                    previous.setNext(current.getNext());
-
-                count--;
-                System.out.println("The book with title " + title + " has been removed successfully.");
-                return;
+                if (books.remove(currentBook)) {
+                    count--;
+                    System.out.println("The book with title " + title + " has been removed successfully.");
+                    return;
+                }
+                break;
             }
 
-            previous = current;
             current = current.getNext();
         }
 
