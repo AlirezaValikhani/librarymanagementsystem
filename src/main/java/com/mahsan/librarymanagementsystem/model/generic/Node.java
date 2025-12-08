@@ -1,4 +1,4 @@
-package com.mahsan.librarymanagementsystem.generic;
+package com.mahsan.librarymanagementsystem.model.generic;
 
 public class Node<T> {
 

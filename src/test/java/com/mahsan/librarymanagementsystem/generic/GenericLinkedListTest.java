@@ -2,8 +2,9 @@ package com.mahsan.librarymanagementsystem.generic;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.mahsan.librarymanagementsystem.enums.BookState;
+import com.mahsan.librarymanagementsystem.model.enums.BookState;
 import com.mahsan.librarymanagementsystem.model.Book;
+import com.mahsan.librarymanagementsystem.model.generic.GenericLinkedList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

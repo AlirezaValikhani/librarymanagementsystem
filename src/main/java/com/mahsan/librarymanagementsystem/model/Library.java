@@ -1,8 +1,8 @@
 package com.mahsan.librarymanagementsystem.model;
 
 import com.mahsan.librarymanagementsystem.exception.BookNotFoundException;
-import com.mahsan.librarymanagementsystem.generic.GenericLinkedList;
-import com.mahsan.librarymanagementsystem.generic.Node;
+import com.mahsan.librarymanagementsystem.model.generic.GenericLinkedList;
+import com.mahsan.librarymanagementsystem.model.generic.Node;
 
 public class Library {
 

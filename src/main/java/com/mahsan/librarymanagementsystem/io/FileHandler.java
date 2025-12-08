@@ -1,6 +1,6 @@
 package com.mahsan.librarymanagementsystem.io;
 
-import com.mahsan.librarymanagementsystem.enums.BookState;
+import com.mahsan.librarymanagementsystem.model.enums.BookState;
 import com.mahsan.librarymanagementsystem.exception.LogWriteException;
 import com.mahsan.librarymanagementsystem.exception.MissingParametersException;
 import com.mahsan.librarymanagementsystem.model.Book;

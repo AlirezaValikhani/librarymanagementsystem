@@ -1,6 +1,6 @@
 package com.mahsan.librarymanagementsystem.model;
 
-import com.mahsan.librarymanagementsystem.enums.BookState;
+import com.mahsan.librarymanagementsystem.model.enums.BookState;
 import com.mahsan.librarymanagementsystem.exception.BookNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

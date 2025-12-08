@@ -1,6 +1,6 @@
 package com.mahsan.librarymanagementsystem;
 
-import com.mahsan.librarymanagementsystem.enums.BookState;
+import com.mahsan.librarymanagementsystem.model.enums.BookState;
 import com.mahsan.librarymanagementsystem.exception.BookNotFoundException;
 import com.mahsan.librarymanagementsystem.io.FileHandler;
 import com.mahsan.librarymanagementsystem.model.Book;
