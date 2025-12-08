@@ -1,4 +1,4 @@
-package librarymanagementsystem.enums;
+package com.mahsan.librarymanagementsystem.enums;
 
 public enum BookState {
 

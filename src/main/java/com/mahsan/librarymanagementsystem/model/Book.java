@@ -1,6 +1,6 @@
-package librarymanagementsystem.model;
+package com.mahsan.librarymanagementsystem.model;
 
-import librarymanagementsystem.enums.BookState;
+import com.mahsan.librarymanagementsystem.enums.BookState;
 
 import java.util.Objects;
 

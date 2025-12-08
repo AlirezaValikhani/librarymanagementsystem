@@ -1,10 +1,10 @@
-package librarymanagementsystem.io;
+package com.mahsan.librarymanagementsystem.io;
 
-import librarymanagementsystem.enums.BookState;
-import librarymanagementsystem.exception.LogWriteException;
-import librarymanagementsystem.exception.MissingParametersException;
-import librarymanagementsystem.model.Book;
-import librarymanagementsystem.model.Library;
+import com.mahsan.librarymanagementsystem.enums.BookState;
+import com.mahsan.librarymanagementsystem.exception.LogWriteException;
+import com.mahsan.librarymanagementsystem.exception.MissingParametersException;
+import com.mahsan.librarymanagementsystem.model.Book;
+import com.mahsan.librarymanagementsystem.model.Library;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -50,10 +50,10 @@ public class FileHandler {
 
         } catch (FileNotFoundException e) {
             logAction("Load error", "File not found : " + INPUT_FILE);
-            throw new librarymanagementsystem.exception.FileNotFoundException("File not found");
+            throw new com.mahsan.librarymanagementsystem.exception.FileNotFoundException("File not found");
         } catch (IOException e) {
             logAction("Error", "IO error : " + e.getMessage());
-            throw new librarymanagementsystem.exception.IOException("Error loading file : " + e.getMessage());
+            throw new com.mahsan.librarymanagementsystem.exception.IOException("Error loading file : " + e.getMessage());
         }
 
         return count;

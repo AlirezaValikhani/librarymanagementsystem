@@ -1,4 +1,4 @@
-package librarymanagementsystem.exception;
+package com.mahsan.librarymanagementsystem.exception;
 
 public class FileNotFoundException extends RuntimeException {
     public FileNotFoundException(String message) {

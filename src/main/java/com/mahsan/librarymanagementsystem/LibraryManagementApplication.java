@@ -1,12 +1,14 @@
-import librarymanagementsystem.enums.BookState;
-import librarymanagementsystem.exception.BookNotFoundException;
-import librarymanagementsystem.io.FileHandler;
-import librarymanagementsystem.model.Book;
-import librarymanagementsystem.model.Library;
+package com.mahsan.librarymanagementsystem;
+
+import com.mahsan.librarymanagementsystem.enums.BookState;
+import com.mahsan.librarymanagementsystem.exception.BookNotFoundException;
+import com.mahsan.librarymanagementsystem.io.FileHandler;
+import com.mahsan.librarymanagementsystem.model.Book;
+import com.mahsan.librarymanagementsystem.model.Library;
 
 import java.util.Scanner;
 
-public class Main {
+public class LibraryManagementApplication {
     public static void main(String[] args) {
         Library library = new Library(100);
         FileHandler fileHandler = new FileHandler();

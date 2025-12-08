@@ -1,4 +1,4 @@
-package librarymanagementsystem.generic;
+package com.mahsan.librarymanagementsystem.generic;
 
 public class GenericLinkedList<T> {
 
