@@ -60,6 +60,8 @@ public class FileHandler {
         String timestamp = LocalDateTime.now().format(FORMATTER);
         String log = String.format("[%s] Operation : %s | Result : %s", timestamp, operation, result);
 
+        System.out.println(log);
+
         try {
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(OUTPUT_FILE, true))) {
                 bw.write(log);
@@ -67,23 +69,6 @@ public class FileHandler {
             }
         } catch (IOException e) {
             throw new LogWriteException("Error in writing output file!");
-        }
-    }
-
-    public void logAndPrint(String message) {
-        System.out.println(message);
-
-        String timestamp = LocalDateTime.now().format(FORMATTER);
-        String logEntry = String.format("[%s] DISPLAY/CLI: %s", timestamp, message);
-
-        try {
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(OUTPUT_FILE, true))) {
-                bw.write(logEntry);
-                bw.newLine();
-            }
-        } catch (IOException e) {
-            System.err.println("Error writing general log to file: " + e.getMessage());
-            throw new LogWriteException("Error in writing output file for display!");
         }
     }
 }

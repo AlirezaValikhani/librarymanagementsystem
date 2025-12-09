@@ -2,6 +2,7 @@ package com.mahsan.librarymanagementsystem.generic;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.mahsan.librarymanagementsystem.io.FileHandler;
 import com.mahsan.librarymanagementsystem.model.enums.BookState;
 import com.mahsan.librarymanagementsystem.model.Book;
 import com.mahsan.librarymanagementsystem.model.generic.GenericLinkedList;
@@ -11,10 +12,12 @@ import org.junit.jupiter.api.Test;
 class GenericLinkedListTest {
 
     private GenericLinkedList<Book> list;
+    private FileHandler fileHandler;
 
     @BeforeEach
     void setUp() {
         list = new GenericLinkedList<>();
+        fileHandler = new FileHandler();
     }
 
     @Test
@@ -32,7 +35,7 @@ class GenericLinkedListTest {
         Book testBook = new Book("First", "F_Author", 1990, BookState.EXIST);
         list.add(testBook);
 
-        assertTrue(list.remove(testBook));
+        assertTrue(list.remove(testBook, fileHandler));
         assertNull(list.getHead());
         assertTrue(list.isEmpty());
     }
@@ -44,7 +47,7 @@ class GenericLinkedListTest {
 
         list.add(existBook);
 
-        assertFalse(list.remove(notFoundBook));
+        assertFalse(list.remove(notFoundBook, fileHandler));
 
         assertNotNull(list.getHead());
         assertEquals("Exist", list.getHead().getData().getTitle());
@@ -54,6 +57,6 @@ class GenericLinkedListTest {
     void testRemoveFromEmpty() {
         Book randomBook = new Book("Random", "R_Author", 1990, BookState.EXIST);
 
-        assertFalse(list.remove(randomBook));
+        assertFalse(list.remove(randomBook, fileHandler));
     }
 }

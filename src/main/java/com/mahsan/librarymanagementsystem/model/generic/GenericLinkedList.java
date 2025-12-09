@@ -29,7 +29,7 @@ public class GenericLinkedList<T> {
         current.next = newNode;
     }
 
-    public boolean remove(T data) {
+    public boolean remove(T data, FileHandler fileHandler) {
         if (head == null)
             return false;
 
@@ -47,7 +47,7 @@ public class GenericLinkedList<T> {
         }
 
         if (current == null) {
-            System.out.println("Data not found!");
+            fileHandler.logAction("Error", "Data not found!");
             return false;
         }
 
@@ -59,13 +59,12 @@ public class GenericLinkedList<T> {
         Node<T> current = head;
 
         if (current == null) {
-            fileHandler.logAndPrint("List is empty!");
+            fileHandler.logAction("Display Content", "List is empty!");
             return;
         }
 
-        fileHandler.logAndPrint("Content list : ");
         while (current != null) {
-            fileHandler.logAndPrint(current.data.toString());
+            fileHandler.logAction("Item Detail", current.data.toString());
             current = current.next;
         }
     }
