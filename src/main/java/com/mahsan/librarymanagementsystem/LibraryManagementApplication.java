@@ -15,8 +15,7 @@ public class LibraryManagementApplication {
         Scanner scanner = new Scanner(System.in);
         boolean runningFlag = true;
 
-        int loadedCount = fileHandler.loadBooksFromFile(library);
-        fileHandler.logAction("Load book from file", loadedCount + " book added to library successfully.");
+        fileHandler.loadBooksFromFile(library);
 
         while (runningFlag) {
             displayMenu();
@@ -30,15 +29,18 @@ public class LibraryManagementApplication {
                     removeBook(library, scanner, fileHandler);
                     break;
                 case "3":
-                    displayBooks(library, fileHandler);
+                    updateBook(library, scanner, fileHandler);
                     break;
                 case "4":
+                    displayBooks(library, fileHandler);
+                    break;
+                case "5":
                     runningFlag = false;
                     fileHandler.logAction("Exit", "User exited.");
                     System.out.println("Logs saved in log_output.txt file.");
                     break;
                 default:
-                    System.err.println("Invalid input. Choose a number between 1 and 4.");
+                    System.err.println("Invalid input. Choose a number between 1 and 5.");
                     fileHandler.logAction("CLI wrong input", "Invalid input. User chose wrong number!");
                     break;
             }
@@ -46,9 +48,26 @@ public class LibraryManagementApplication {
         scanner.close();
     }
 
+    private static void updateBook(Library library, Scanner scanner, FileHandler fileHandler) {
+        System.out.println("Enter search key: ");
+        String searchKey = scanner.nextLine();
+        System.out.println("Enter book title: ");
+        String title = scanner.nextLine();
+        System.out.println("Enter book author: ");
+        String author = scanner.nextLine();
+        System.out.println("Enter book year of publication: ");
+        String yearOfPublication = scanner.nextLine();
+
+        try {
+            library.updateBook(searchKey, title, author, Integer.parseInt(yearOfPublication), fileHandler);
+        } catch (NumberFormatException e) {
+            fileHandler.logAction("Error", "Invalid year of publication : " + yearOfPublication);
+            System.out.println("Invalid year of publication : " + yearOfPublication);
+        }
+    }
+
     private static void displayBooks(Library library, FileHandler fileHandler) {
-        library.displayBooks();
-        fileHandler.logAction("Display", "Books displayed.");
+        library.displayBooks(fileHandler);
     }
 
     private static void removeBook(Library library, Scanner scanner, FileHandler fileHandler) {
@@ -56,7 +75,7 @@ public class LibraryManagementApplication {
         String title = scanner.nextLine();
 
         try {
-            library.removeBookByTitle(title);
+            library.removeBookByTitle(title, fileHandler);
             fileHandler.logAction("Remove book", "Book with title " + title + " removed from library successfully.");
         } catch (BookNotFoundException e) {
             fileHandler.logAction("Remove book fail", "Book with title " + title + " not found in library!");
@@ -91,8 +110,9 @@ public class LibraryManagementApplication {
         System.out.println("===============================");
         System.out.println("1.Add new book");
         System.out.println("2.Delete book with title");
-        System.out.println("3.Show all books");
-        System.out.println("4.Exit");
-        System.out.print("Choose a number between 1 and 4 : ");
+        System.out.println("3.Update book");
+        System.out.println("4.Show all books");
+        System.out.println("5.Exit");
+        System.out.print("Choose a number between 1 and 5 : ");
     }
 }
