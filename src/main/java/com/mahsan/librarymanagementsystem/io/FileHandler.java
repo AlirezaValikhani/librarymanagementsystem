@@ -16,9 +16,8 @@ public class FileHandler {
     private static final String OUTPUT_FILE = "log_output.txt";
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public int loadBooksFromFile(Library library) {
+    public void loadBooksFromFile(Library library) {
 
-        int count = 0;
         try (BufferedReader br = new BufferedReader(new FileReader(INPUT_FILE))) {
             String line;
 
@@ -40,7 +39,7 @@ public class FileHandler {
 
                     Book book = new Book(title, author, yearOfPublication, bookState);
                     library.addBook(book);
-                    count++;
+                    logAction("Add book", book.getTitle() + " book added to library successfully");
                 } catch (NumberFormatException e) {
                     logAction("Error", "Invalid year of publication : " + line);
                     throw new MissingParametersException("Invalid year of publication : " + line);
@@ -55,8 +54,6 @@ public class FileHandler {
             logAction("Error", "IO error : " + e.getMessage());
             throw new com.mahsan.librarymanagementsystem.exception.IOException("Error loading file : " + e.getMessage());
         }
-
-        return count;
     }
 
     public void logAction(String operation, String result) {
@@ -70,6 +67,23 @@ public class FileHandler {
             }
         } catch (IOException e) {
             throw new LogWriteException("Error in writing output file!");
+        }
+    }
+
+    public void logAndPrint(String message) {
+        System.out.println(message);
+
+        String timestamp = LocalDateTime.now().format(FORMATTER);
+        String logEntry = String.format("[%s] DISPLAY/CLI: %s", timestamp, message);
+
+        try {
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(OUTPUT_FILE, true))) {
+                bw.write(logEntry);
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Error writing general log to file: " + e.getMessage());
+            throw new LogWriteException("Error in writing output file for display!");
         }
     }
 }

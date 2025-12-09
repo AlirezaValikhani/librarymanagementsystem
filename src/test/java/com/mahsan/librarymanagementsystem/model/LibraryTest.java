@@ -1,5 +1,6 @@
 package com.mahsan.librarymanagementsystem.model;
 
+import com.mahsan.librarymanagementsystem.io.FileHandler;
 import com.mahsan.librarymanagementsystem.model.enums.BookState;
 import com.mahsan.librarymanagementsystem.exception.BookNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class LibraryTest {
 
     private Library library;
+    private FileHandler fileHandler;
     private Book book1;
     private Book book2;
     private Book book3;
@@ -17,6 +19,7 @@ class LibraryTest {
     @BeforeEach
     void setUp() {
         library = new Library();
+        fileHandler = new FileHandler();
 
         book1 = new Book("Data structure", "Someone", 2020, BookState.EXIST);
         book2 = new Book("Java persistence", "Author", 2022, BookState.BORROWED);
@@ -33,20 +36,20 @@ class LibraryTest {
 
     @Test
     void testRemoveByTitleSuccess() {
-        assertDoesNotThrow(() -> library.removeBookByTitle("Java persistence"));
+        assertDoesNotThrow(() -> library.removeBookByTitle("Java persistence", fileHandler));
 
         assertEquals(1, library.countBooks());
     }
 
     @Test
     void testRemoveByTitleNotFound() {
-        assertThrows(BookNotFoundException.class, () -> library.removeBookByTitle("Non-existent book"));
+        assertThrows(BookNotFoundException.class, () -> library.removeBookByTitle("Non-existent book", fileHandler));
     }
 
     @Test
     void testRemoveByTitleFromEmpty() {
         library = new Library();
 
-        assertThrows(BookNotFoundException.class, () -> library.removeBookByTitle("Anything"));
+        assertThrows(BookNotFoundException.class, () -> library.removeBookByTitle("Anything", fileHandler));
     }
 }

@@ -1,5 +1,7 @@
 package com.mahsan.librarymanagementsystem.model.generic;
 
+import com.mahsan.librarymanagementsystem.io.FileHandler;
+
 public class GenericLinkedList<T> {
 
     private Node<T> head;
@@ -53,17 +55,17 @@ public class GenericLinkedList<T> {
         return true;
     }
 
-    public void display() {
+    public void display(FileHandler fileHandler) {
         Node<T> current = head;
 
         if (current == null) {
-            System.out.println("List is empty!");
+            fileHandler.logAndPrint("List is empty!");
             return;
         }
 
-        System.out.println("List content : ");
+        fileHandler.logAndPrint("Content list : ");
         while (current != null) {
-            System.out.println(current.data.toString());
+            fileHandler.logAndPrint(current.data.toString());
             current = current.next;
         }
     }
