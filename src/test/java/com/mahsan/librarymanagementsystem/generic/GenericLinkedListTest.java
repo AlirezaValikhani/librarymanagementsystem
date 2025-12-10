@@ -3,6 +3,10 @@ package com.mahsan.librarymanagementsystem.generic;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.mahsan.librarymanagementsystem.io.FileHandler;
+import com.mahsan.librarymanagementsystem.model.Magazine;
+import com.mahsan.librarymanagementsystem.model.ReferenceBook;
+import com.mahsan.librarymanagementsystem.model.Thesis;
+import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 import com.mahsan.librarymanagementsystem.model.enums.BookState;
 import com.mahsan.librarymanagementsystem.model.Book;
 import com.mahsan.librarymanagementsystem.model.generic.GenericLinkedList;
@@ -11,7 +15,7 @@ import org.junit.jupiter.api.Test;
 
 class GenericLinkedListTest {
 
-    private GenericLinkedList<Book> list;
+    private GenericLinkedList<LibraryItem> list;
     private FileHandler fileHandler;
 
     @BeforeEach
@@ -22,17 +26,20 @@ class GenericLinkedListTest {
 
     @Test
     void testAddElementsAndCheckOrder() {
-        list.add(new Book("First", "F_Author", 1990, BookState.EXIST));
-        list.add(new Book("Second", "F_Author", 1995, BookState.EXIST));
+        list.add(new ReferenceBook("ReferenceBook", "F_Author", 1990,
+                "1020304050123", 10));
+        list.add(new Thesis("Thesis", "F_Author", 1995,
+                "MIT", "Bachelor", "Test"));
 
         assertNotNull(list.getHead());
-        assertEquals("First", list.getHead().getData().getTitle());
-        assertEquals("Second", list.getHead().getNext().getData().getTitle());
+        assertEquals("ReferenceBook", list.getHead().getData().getTitle());
+        assertEquals("Thesis", list.getHead().getNext().getData().getTitle());
     }
 
     @Test
     void testRemove() {
-        Book testBook = new Book("First", "F_Author", 1990, BookState.EXIST);
+        Book testBook = new Book("First", "F_Author", 1990,
+                BookState.EXIST, "1020304050123", 20);
         list.add(testBook);
 
         assertTrue(list.remove(testBook, fileHandler));
@@ -42,8 +49,10 @@ class GenericLinkedListTest {
 
     @Test
     void testRemoveNotFound() {
-        Book existBook = new Book("Exist", "E_Author", 1990, BookState.EXIST);
-        Book notFoundBook = new Book("NotFound", "N_F_Author", 1990, BookState.EXIST);
+        Magazine existBook = new Magazine("Exist", "E_Author", 1990,
+                "1234567891012", 10, 20);
+        Magazine notFoundBook = new Magazine("NotFound", "N_F_Author", 1990,
+                "1234567891012", 10, 20);
 
         list.add(existBook);
 
@@ -55,7 +64,8 @@ class GenericLinkedListTest {
 
     @Test
     void testRemoveFromEmpty() {
-        Book randomBook = new Book("Random", "R_Author", 1990, BookState.EXIST);
+        Book randomBook = new Book("Random", "R_Author", 1990,
+                BookState.EXIST, "1234567891012", 4);
 
         assertFalse(list.remove(randomBook, fileHandler));
     }

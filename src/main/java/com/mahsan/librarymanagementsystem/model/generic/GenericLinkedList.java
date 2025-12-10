@@ -2,7 +2,9 @@ package com.mahsan.librarymanagementsystem.model.generic;
 
 import com.mahsan.librarymanagementsystem.io.FileHandler;
 
-public class GenericLinkedList<T> {
+import java.util.Iterator;
+
+public class GenericLinkedList<T> implements Iterable<T> {
 
     private Node<T> head;
 
@@ -71,5 +73,10 @@ public class GenericLinkedList<T> {
 
     public boolean isEmpty() {
         return head == null;
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new LinkedListIterator<>(head);
     }
 }

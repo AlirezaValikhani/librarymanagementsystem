@@ -1,10 +1,10 @@
 package com.mahsan.librarymanagementsystem.io;
 
-import com.mahsan.librarymanagementsystem.model.enums.BookState;
-import com.mahsan.librarymanagementsystem.exception.LogWriteException;
 import com.mahsan.librarymanagementsystem.exception.MissingParametersException;
-import com.mahsan.librarymanagementsystem.model.Book;
-import com.mahsan.librarymanagementsystem.model.Library;
+import com.mahsan.librarymanagementsystem.factory.LibraryItemFactory;
+import com.mahsan.librarymanagementsystem.model.LibraryManager;
+import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
+import com.mahsan.librarymanagementsystem.exception.LogWriteException;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -12,47 +12,43 @@ import java.time.format.DateTimeFormatter;
 
 public class FileHandler {
 
-    private static final String INPUT_FILE = "books_input.txt";
-    private static final String OUTPUT_FILE = "log_output.txt";
+    private static final String INPUT_FILE = "books_input.csv";
+    private static final String OUTPUT_FILE = "log_output.csv";
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final LibraryItemFactory libraryItemFactory = new LibraryItemFactory();
 
-    public void loadBooksFromFile(Library library) {
+    public void loadBooksFromFile(LibraryManager libraryManager) {
 
         try (BufferedReader br = new BufferedReader(new FileReader(INPUT_FILE))) {
             String line;
 
             while ((line = br.readLine()) != null) {
-                if (line.trim().isEmpty()) continue;
+                if (line.trim().isEmpty())
+                    continue;
 
-                String[] bookDetails = line.split(",");
-                if (bookDetails.length != 4) {
-                    logAction("Error", "This line has more or less than 4 columns : " + line);
+                String[] allData = line.split(",");
+
+                if (allData.length < 4) {
+                    logAction("Error", "Invalid line format: " + line);
                     continue;
                 }
 
-                try {
-                    String title = bookDetails[0].trim();
-                    String author = bookDetails[1].trim();
-                    int yearOfPublication = Integer.parseInt(bookDetails[2].trim());
-                    int bookStateValue = Integer.parseInt(bookDetails[3].trim());
-                    BookState bookState = BookState.fromValue(bookStateValue);
+                String type = allData[0].trim().toLowerCase();
+                String[] details = new String[allData.length - 1];
+                System.arraycopy(allData, 1, details, 0, details.length);
 
-                    Book book = new Book(title, author, yearOfPublication, bookState);
-                    library.addBook(book);
-                    logAction("Add book", book.getTitle() + " book added to library successfully");
-                } catch (NumberFormatException e) {
-                    logAction("Error", "Invalid year of publication : " + line);
-                    throw new MissingParametersException("Invalid year of publication : " + line);
-                }
-
+                LibraryItem item = libraryItemFactory.createItem(type, details);
+                libraryManager.addItem(item);
+                logAction("Add item", item.getTitle() + " (" + type + ") added to library successfully");
             }
-
         } catch (FileNotFoundException e) {
-            logAction("Load error", "File not found : " + INPUT_FILE);
+            logAction("Load error", "File not found: " + INPUT_FILE);
             throw new com.mahsan.librarymanagementsystem.exception.FileNotFoundException("File not found");
         } catch (IOException e) {
-            logAction("Error", "IO error : " + e.getMessage());
-            throw new com.mahsan.librarymanagementsystem.exception.IOException("Error loading file : " + e.getMessage());
+            logAction("Error", "IO error: " + e.getMessage());
+            throw new com.mahsan.librarymanagementsystem.exception.IOException("Error loading file: " + e.getMessage());
+        } catch (MissingParametersException e) {
+            logAction("Error in create item", "Missing parameters: " + e.getMessage());
         }
     }
 
