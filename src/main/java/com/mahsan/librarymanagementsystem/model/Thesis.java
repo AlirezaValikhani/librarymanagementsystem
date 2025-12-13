@@ -9,8 +9,8 @@ public class Thesis extends LibraryItem {
     private String degreeLevel;
     private String advisorName;
 
-    public Thesis(String title, String author, int yearOfPublication, String universityName, String degreeLevel, String advisorName) {
-        super(title, author, yearOfPublication);
+    public Thesis(String UUID, String title, String author, int yearOfPublication, String universityName, String degreeLevel, String advisorName) {
+        super(UUID, title, author, yearOfPublication);
         this.universityName = universityName;
         this.degreeLevel = degreeLevel;
         this.advisorName = advisorName;

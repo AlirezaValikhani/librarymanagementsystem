@@ -9,8 +9,8 @@ public class ReferenceBook extends LibraryItem {
     private int editionNumber;
     private boolean isLendable = false;
 
-    public ReferenceBook(String title, String author, int yearOfPublication, String ISBN, int editionNumber) {
-        super(title, author, yearOfPublication);
+    public ReferenceBook(String UUID, String title, String author, int yearOfPublication, String ISBN, int editionNumber) {
+        super(UUID, title, author, yearOfPublication);
         this.ISBN = ISBN;
         this.editionNumber = editionNumber;
     }

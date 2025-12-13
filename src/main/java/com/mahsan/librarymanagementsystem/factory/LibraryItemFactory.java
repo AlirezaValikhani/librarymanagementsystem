@@ -7,7 +7,7 @@ import com.mahsan.librarymanagementsystem.model.enums.BookState;
 
 public class LibraryItemFactory {
 
-    public LibraryItem createItem(String type, String[] details) {
+    public LibraryItem createItem(String type, String[] details, String uuid) {
 
         if (details.length < 3)
             throw new MissingParametersException("Insufficient details for item");
@@ -30,7 +30,7 @@ public class LibraryItemFactory {
                 BookState state = BookState.fromValue(Integer.parseInt(details[3].trim()));
                 String isbn = details[4].trim();
                 int copies = Integer.parseInt(details[5].trim());
-                return new Book(title, author, year, state, isbn, copies);
+                return new Book(uuid, title, author, year, state, isbn, copies);
 
             case "magazine":
                 if (details.length < 6)
@@ -39,7 +39,7 @@ public class LibraryItemFactory {
                 String issn = details[3].trim();
                 int volume = Integer.parseInt(details[4].trim());
                 int issue = Integer.parseInt(details[5].trim());
-                return new Magazine(title, author, year, issn, volume, issue);
+                return new Magazine(uuid, title, author, year, issn, volume, issue);
 
             case "thesis":
                 if (details.length < 6)
@@ -48,7 +48,7 @@ public class LibraryItemFactory {
                 String university = details[3].trim();
                 String degree = details[4].trim();
                 String advisor = details[5].trim();
-                return new Thesis(title, author, year, university, degree, advisor);
+                return new Thesis(uuid, title, author, year, university, degree, advisor);
 
             case "reference":
                 if (details.length < 6)
@@ -57,7 +57,7 @@ public class LibraryItemFactory {
                 String refIsbn = details[3].trim();
                 int edition = Integer.parseInt(details[4].trim());
                 boolean lendable = Boolean.parseBoolean(details[5].trim());
-                ReferenceBook refBook = new ReferenceBook(title, author, year, refIsbn, edition);
+                ReferenceBook refBook = new ReferenceBook(uuid, title, author, year, refIsbn, edition);
                 refBook.setLendable(lendable);
                 return refBook;
 

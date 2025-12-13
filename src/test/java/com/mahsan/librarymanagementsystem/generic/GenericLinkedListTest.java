@@ -13,6 +13,8 @@ import com.mahsan.librarymanagementsystem.model.generic.GenericLinkedList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 class GenericLinkedListTest {
 
     private GenericLinkedList<LibraryItem> list;
@@ -26,9 +28,9 @@ class GenericLinkedListTest {
 
     @Test
     void testAddElementsAndCheckOrder() {
-        list.add(new ReferenceBook("ReferenceBook", "F_Author", 1990,
+        list.add(new ReferenceBook(UUID.randomUUID().toString(), "ReferenceBook", "F_Author", 1990,
                 "1020304050123", 10));
-        list.add(new Thesis("Thesis", "F_Author", 1995,
+        list.add(new Thesis(UUID.randomUUID().toString(), "Thesis", "F_Author", 1995,
                 "MIT", "Bachelor", "Test"));
 
         assertNotNull(list.getHead());
@@ -38,7 +40,7 @@ class GenericLinkedListTest {
 
     @Test
     void testRemove() {
-        Book testBook = new Book("First", "F_Author", 1990,
+        Book testBook = new Book(UUID.randomUUID().toString(), "First", "F_Author", 1990,
                 BookState.EXIST, "1020304050123", 20);
         list.add(testBook);
 
@@ -49,9 +51,9 @@ class GenericLinkedListTest {
 
     @Test
     void testRemoveNotFound() {
-        Magazine existBook = new Magazine("Exist", "E_Author", 1990,
+        Magazine existBook = new Magazine(UUID.randomUUID().toString(), "Exist", "E_Author", 1990,
                 "1234567891012", 10, 20);
-        Magazine notFoundBook = new Magazine("NotFound", "N_F_Author", 1990,
+        Magazine notFoundBook = new Magazine(UUID.randomUUID().toString(), "NotFound", "N_F_Author", 1990,
                 "1234567891012", 10, 20);
 
         list.add(existBook);
@@ -64,7 +66,7 @@ class GenericLinkedListTest {
 
     @Test
     void testRemoveFromEmpty() {
-        Book randomBook = new Book("Random", "R_Author", 1990,
+        Book randomBook = new Book(UUID.randomUUID().toString(), "Random", "R_Author", 1990,
                 BookState.EXIST, "1234567891012", 4);
 
         assertFalse(list.remove(randomBook, fileHandler));

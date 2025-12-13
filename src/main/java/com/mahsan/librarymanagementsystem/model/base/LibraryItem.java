@@ -4,17 +4,23 @@ import com.mahsan.librarymanagementsystem.io.FileHandler;
 
 public abstract class LibraryItem implements Searchable {
 
+    private String UUID;
     private String title;
     private String author;
     private int yearOfPublication;
 
-    public LibraryItem(String title, String author, int yearOfPublication) {
+    public LibraryItem(String UUID, String title, String author, int yearOfPublication) {
+        this.UUID = UUID;
         this.title = title;
         this.author = author;
         this.yearOfPublication = yearOfPublication;
     }
 
     public LibraryItem() {
+    }
+
+    public String getUUID() {
+        return UUID;
     }
 
     public String getTitle() {

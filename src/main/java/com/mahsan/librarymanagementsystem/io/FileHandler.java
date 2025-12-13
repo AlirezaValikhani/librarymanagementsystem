@@ -9,6 +9,7 @@ import com.mahsan.librarymanagementsystem.exception.LogWriteException;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 public class FileHandler {
 
@@ -37,8 +38,9 @@ public class FileHandler {
                 String[] details = new String[allData.length - 1];
                 System.arraycopy(allData, 1, details, 0, details.length);
 
-                LibraryItem item = libraryItemFactory.createItem(type, details);
-                libraryManager.addItem(item);
+                String uuid = UUID.randomUUID().toString();
+                LibraryItem item = libraryItemFactory.createItem(type, details, uuid);
+                libraryManager.addItem(uuid, item);
                 logAction("Add item", item.getTitle() + " (" + type + ") added to library successfully");
             }
         } catch (FileNotFoundException e) {

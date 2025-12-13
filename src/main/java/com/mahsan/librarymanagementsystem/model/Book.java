@@ -10,8 +10,8 @@ public class Book extends LibraryItem {
     private String ISBN;
     private int numberOfCopies;
 
-    public Book(String title, String author, int yearOfPublication, BookState state, String ISBN, int numberOfCopies) {
-        super(title, author, yearOfPublication);
+    public Book(String UUID, String title, String author, int yearOfPublication, BookState state, String ISBN, int numberOfCopies) {
+        super(UUID, title, author, yearOfPublication);
         this.state = state;
         this.ISBN = ISBN;
         this.numberOfCopies = numberOfCopies;

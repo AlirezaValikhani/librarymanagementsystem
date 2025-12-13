@@ -9,8 +9,8 @@ public class Magazine extends LibraryItem {
     private int volumeNumber;
     private int issueNumber;
 
-    public Magazine(String title, String author, int yearOfPublication, String ISSN, int volumeNumber, int issueNumber) {
-        super(title, author, yearOfPublication);
+    public Magazine(String UUID, String title, String author, int yearOfPublication, String ISSN, int volumeNumber, int issueNumber) {
+        super(UUID, title, author, yearOfPublication);
         this.ISSN = ISSN;
         this.volumeNumber = volumeNumber;
         this.issueNumber = issueNumber;

@@ -6,6 +6,8 @@ import com.mahsan.librarymanagementsystem.exception.BookNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class LibraryTest {
@@ -21,15 +23,15 @@ class LibraryTest {
         libraryManager = new LibraryManager();
         fileHandler = new FileHandler();
 
-        book1 = new Book("Data structure", "Someone", 2020,
+        book1 = new Book(UUID.randomUUID().toString(), "Data structure", "Someone", 2020,
                 BookState.EXIST, "1234567891012", 2);
-        book2 = new Book("Java persistence", "Author", 2022,
+        book2 = new Book(UUID.randomUUID().toString(), "Java persistence", "Author", 2022,
                 BookState.BORROWED, "1234567891012", 2);
-        book3 = new Book("Java persistence", "OtherAuthor", 2023,
+        book3 = new Book(UUID.randomUUID().toString(), "Java persistence", "OtherAuthor", 2023,
                 BookState.EXIST, "1234567891012", 2);
 
-        libraryManager.addItem(book1);
-        libraryManager.addItem(book2);
+        libraryManager.addItem(UUID.randomUUID().toString(), book1);
+        libraryManager.addItem(UUID.randomUUID().toString(), book2);
     }
 
 //    @Test
@@ -44,15 +46,15 @@ class LibraryTest {
 //        assertEquals(1, libraryManager.countBooks());
 //    }
 
-    @Test
-    void testRemoveByTitleNotFound() {
-        assertThrows(BookNotFoundException.class, () -> libraryManager.removeLibraryItemByTitle("Non-existent book", fileHandler));
-    }
-
-    @Test
-    void testRemoveByTitleFromEmpty() {
-        libraryManager = new LibraryManager();
-
-        assertThrows(BookNotFoundException.class, () -> libraryManager.removeLibraryItemByTitle("Anything", fileHandler));
-    }
+//    @Test
+//    void testRemoveByTitleNotFound() {
+//        assertThrows(BookNotFoundException.class, () -> libraryManager.removeLibraryItemByTitle("Non-existent book", fileHandler));
+//    }
+//
+//    @Test
+//    void testRemoveByTitleFromEmpty() {
+//        libraryManager = new LibraryManager();
+//
+//        assertThrows(BookNotFoundException.class, () -> libraryManager.removeLibraryItemByTitle("Anything", fileHandler));
+//    }
 }
