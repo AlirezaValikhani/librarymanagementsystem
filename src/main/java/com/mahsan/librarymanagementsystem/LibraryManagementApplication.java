@@ -2,20 +2,23 @@ package com.mahsan.librarymanagementsystem;
 
 import com.mahsan.librarymanagementsystem.exception.MissingParametersException;
 import com.mahsan.librarymanagementsystem.factory.LibraryItemFactory;
-import com.mahsan.librarymanagementsystem.model.LibraryManager;
+import com.mahsan.librarymanagementsystem.model.*;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 import com.mahsan.librarymanagementsystem.io.FileHandler;
+import com.mahsan.librarymanagementsystem.model.enums.BookState;
 
+import java.util.List;
 import java.util.Scanner;
+import java.util.UUID;
 
 public class LibraryManagementApplication {
     public static void main(String[] args) {
-        LibraryManager libraryManager = new LibraryManager();
+        LibraryManager manager = new LibraryManager();
         FileHandler fileHandler = new FileHandler();
         Scanner scanner = new Scanner(System.in);
         boolean runningFlag = true;
 
-        fileHandler.loadBooksFromFile(libraryManager);
+        fileHandler.loadBooksFromFile(manager);
 
         while (runningFlag) {
             displayMenu();
@@ -23,21 +26,24 @@ public class LibraryManagementApplication {
 
             switch (input) {
                 case "1":
-                    addItem(libraryManager, scanner, fileHandler);
+                    addItem(manager, scanner, fileHandler);
                     break;
                 case "2":
-                    removeItem(libraryManager, scanner, fileHandler);
+                    removeItem(manager, scanner, fileHandler);
                     break;
                 case "3":
-                    updateItem(libraryManager, scanner, fileHandler);
+                    updateItem(manager, scanner, fileHandler);
                     break;
                 case "4":
-                    displayBooks(libraryManager, fileHandler);
+                    displayBooks(manager, fileHandler);
                     break;
                 case "5":
-                    search(libraryManager, scanner, fileHandler);
+                    search(manager, scanner, fileHandler);
                     break;
                 case "6":
+                    sortedList(manager, fileHandler);
+                    break;
+                case "7":
                     runningFlag = false;
                     fileHandler.logAction("Exit", "User exited.");
                     break;
@@ -49,41 +55,184 @@ public class LibraryManagementApplication {
         scanner.close();
     }
 
-    private static void search(LibraryManager libraryManager, Scanner scanner, FileHandler fileHandler) {
+    private static void sortedList(LibraryManager manager,  FileHandler fileHandler) {
+        manager.getSortedItems().forEach(libraryItem -> libraryItem.display(fileHandler));
+        fileHandler.logAction("Sorted list", "Sorted list successfully called.");
+    }
+
+    private static void search(LibraryManager manager, Scanner scanner, FileHandler fileHandler) {
         fileHandler.logAction("Searching", "Enter anything to search in library: ");
         String query = scanner.nextLine();
 
-        libraryManager.search(query, fileHandler);
+        manager.search(query, fileHandler);
     }
 
     private static void updateItem(LibraryManager manager, Scanner scanner, FileHandler fileHandler) {
         LibraryItem itemToUpdate = selectItemBySearch(manager, scanner, fileHandler, "Update");
 
-        if (itemToUpdate == null)
+        if (itemToUpdate == null) {
+            fileHandler.logAction("Update canceled", "No item selected or found.");
             return;
+        }
 
-        fileHandler.logAction("Prompt", "Enter new Title (Leave empty to keep current: " + itemToUpdate.getTitle() + "):");
-        String newTitle = scanner.nextLine();
-        fileHandler.logAction("Prompt", "Enter new Author (Leave empty to keep current: " + itemToUpdate.getAuthor() + "):");
-        String newAuthor = scanner.nextLine();
-        fileHandler.logAction("Prompt", "Enter new Year of Publication (Current: " + itemToUpdate.getYearOfPublication() + "):");
-        String yearOfPublication = scanner.nextLine();
+        fileHandler.logAction("Prompt", "--- Updating Item: " + itemToUpdate.getTitle() + " (" + itemToUpdate.getClass().getSimpleName() + ") ---");
+
+        System.out.println("Current Title: " + itemToUpdate.getTitle() + " | Enter new Title:");
+        String newTitle = scanner.nextLine().trim();
+        System.out.println("Current Author: " + itemToUpdate.getAuthor() + " | Enter new Author:");
+        String newAuthor = scanner.nextLine().trim();
+        System.out.println("Current Year: " + itemToUpdate.getYearOfPublication() + " | Enter new Year:");
+        String yearOfPublication = scanner.nextLine().trim();
 
         try {
-            int currentYear = itemToUpdate.getYearOfPublication();
-            int newYear = yearOfPublication.isEmpty() ? currentYear : Integer.parseInt(yearOfPublication);
-
-            manager.updateItemFields(
-                    itemToUpdate.getTitle(),
-                    newTitle.isEmpty() ? itemToUpdate.getTitle() : newTitle,
-                    newAuthor.isEmpty() ? itemToUpdate.getAuthor() : newAuthor,
-                    newYear,
-                    fileHandler);
-
-            fileHandler.logAction("Success", "Item '" + itemToUpdate.getTitle() + "' successfully updated.");
-
+            if (itemToUpdate instanceof Book)
+                updateBookSpecifics(manager, (Book) itemToUpdate, newTitle, newAuthor, yearOfPublication, scanner, fileHandler);
+            else if (itemToUpdate instanceof Magazine)
+                updateMagazineSpecifics(manager, (Magazine) itemToUpdate, newTitle, newAuthor, yearOfPublication, scanner, fileHandler);
+            else if (itemToUpdate instanceof Thesis)
+                updateThesisSpecifics(manager, (Thesis) itemToUpdate, newTitle, newAuthor, yearOfPublication, scanner, fileHandler);
+            else if (itemToUpdate instanceof ReferenceBook)
+                updateReferenceSpecifics(manager, (ReferenceBook) itemToUpdate, newTitle, newAuthor, yearOfPublication, scanner, fileHandler);
         } catch (NumberFormatException e) {
-            fileHandler.logAction("Error", "Invalid year of publication format. Update failed.");
+            fileHandler.logAction("Error", e.getMessage());
+        }
+    }
+
+    private static void updateBookSpecifics(LibraryManager manager, Book book, String newTitle, String newAuthor,
+                                            String yearOfPublicationString, Scanner scanner, FileHandler fileHandler) {
+        fileHandler.logAction("Update ISBN", "Current ISBN: " + book.getISBN() + " | Enter new ISBN (Leave empty to skip):");
+        String newIsbn = scanner.nextLine().trim();
+        fileHandler.logAction("Update number of copies", "Current Copies: " + book.getNumberOfCopies() + " | Enter new Copies Count (Leave empty to skip):");
+        String newCopies = scanner.nextLine().trim();
+        fileHandler.logAction("Update book state", "Current Book States: " + book.getState() + " | Enter number to chose Book State (1: Exists, 2: Borrowed, 3: Banned, Leave empty to skip):");
+        String bookStateString = scanner.nextLine().trim();
+
+        if (!newIsbn.isEmpty() && !newCopies.isEmpty() && !bookStateString.isEmpty()) {
+            int yearOfPublication;
+            int finalCopies;
+            int bookState;
+
+            try {
+                yearOfPublication = Integer.parseInt(yearOfPublicationString);
+                finalCopies = Integer.parseInt(newCopies);
+                bookState = Integer.parseInt(bookStateString);
+            } catch (NumberFormatException e) {
+                fileHandler.logAction("Error", "Invalid parameter (ISBN, Number of copies, Book State)");
+                return;
+            }
+
+            String oldTitle = book.getTitle();
+            book.setTitle(newTitle);
+            book.setAuthor(newAuthor);
+            book.setYearOfPublication(yearOfPublication);
+            book.setISBN(newIsbn);
+            book.setNumberOfCopies(finalCopies);
+            book.setState(BookState.fromValue(bookState));
+            manager.addItem(book.getUUID(), book);
+            fileHandler.logAction("Success", "Item " + oldTitle + " successfully updated.");
+        }
+    }
+
+    private static void updateMagazineSpecifics(LibraryManager manager, Magazine magazine, String newTitle, String newAuthor,
+                                                String yearOfPublicationString, Scanner scanner, FileHandler fileHandler) {
+        fileHandler.logAction("Update ISSN", "Current ISSN: " + magazine.getISSN() + " | Enter new ISSN (Leave empty to skip):");
+        String newISSN = scanner.nextLine().trim();
+        fileHandler.logAction("Update volume number", "Current Volume: " + magazine.getVolumeNumber() + " | Enter new Volume Number (Leave empty to skip):");
+        String newVolume = scanner.nextLine().trim();
+        fileHandler.logAction("Update issue number", "Current Issue: " + magazine.getIssueNumber() + " | Enter new Issue Number (Leave empty to skip):");
+        String newIssue = scanner.nextLine().trim();
+        if (!newISSN.isEmpty())
+            magazine.setISSN(newISSN);
+
+
+        if (!newISSN.isEmpty() && !newVolume.isEmpty() && !newIssue.isEmpty()) {
+            int yearOfPublication;
+            int finalVolume;
+            int finalIssue;
+
+            try {
+                yearOfPublication = Integer.parseInt(yearOfPublicationString);
+                finalVolume = Integer.parseInt(newVolume);
+                finalIssue = Integer.parseInt(newIssue);
+            } catch (NumberFormatException e) {
+                fileHandler.logAction("Error", "Invalid parameter (volume or issue number).");
+                return;
+            }
+            String oldTitle = magazine.getTitle();
+            magazine.setTitle(newTitle);
+            magazine.setAuthor(newAuthor);
+            magazine.setYearOfPublication(yearOfPublication);
+            magazine.setISSN(newISSN);
+            magazine.setVolumeNumber(finalVolume);
+            magazine.setIssueNumber(finalIssue);
+            manager.addItem(magazine.getUUID(), magazine);
+            fileHandler.logAction("Success", "Item " + oldTitle + " successfully updated.");
+        }
+    }
+
+    private static void updateThesisSpecifics(LibraryManager manager, Thesis thesis, String newTitle, String newAuthor,
+                                              String yearOfPublicationString, Scanner scanner, FileHandler fileHandler) {
+        fileHandler.logAction("Update university name", "Current University: " + thesis.getUniversityName() + " | Enter new University Name (Leave empty to skip):");
+        String newUniversity = scanner.nextLine().trim();
+        fileHandler.logAction("Update advisor name", "Current Advisor: " + thesis.getAdvisorName() + " | Enter new Advisor Name (Leave empty to skip):");
+        String newAdvisor = scanner.nextLine().trim();
+        fileHandler.logAction("Update degree level", "Current Degree Level: " + thesis.getDegreeLevel() + " | Enter new Degree Level (Leave empty to skip):");
+        String newDegreeLevel = scanner.nextLine().trim();
+
+        if (!newUniversity.isEmpty() && !newAdvisor.isEmpty() && !newDegreeLevel.isEmpty()) {
+            int yearOfPublication;
+
+            try {
+                yearOfPublication = Integer.parseInt(yearOfPublicationString);
+            } catch (NumberFormatException e) {
+                fileHandler.logAction("Error", "Invalid parameter (Year of publication)!");
+                return;
+            }
+            String oldTitle = thesis.getTitle();
+            thesis.setTitle(newTitle);
+            thesis.setAuthor(newAuthor);
+            thesis.setYearOfPublication(yearOfPublication);
+            thesis.setUniversityName(newUniversity);
+            thesis.setAdvisorName(newAdvisor);
+            thesis.setDegreeLevel(newDegreeLevel);
+            manager.addItem(thesis.getUUID(), thesis);
+            fileHandler.logAction("Success", "Item " + oldTitle + " successfully updated.");
+        }
+    }
+
+    private static void updateReferenceSpecifics(LibraryManager manager, ReferenceBook refBook, String newTitle, String newAuthor,
+                                                 String yearOfPublicationString, Scanner scanner, FileHandler fileHandler) {
+        fileHandler.logAction("Update ISBN", "Current ISBN: " + refBook.getISBN() + " | Enter new ISBN (Leave empty to skip):");
+        String newISBN = scanner.nextLine().trim();
+        fileHandler.logAction("Update Edition number", "Current Edition: " + refBook.getEditionNumber() + " | Enter new Edition Number (Leave empty to skip):");
+        String newEdition = scanner.nextLine().trim();
+        fileHandler.logAction("Update is lendable", "Is Lendable (true/false) (Current: " + refBook.isLendable() + ") | Enter new value (Leave empty to skip):");
+        String newLendable = scanner.nextLine().trim();
+
+        if (!newISBN.isEmpty() && !newEdition.isEmpty() && !newLendable.isEmpty()) {
+            int yearOfPublication;
+            int finalEdition;
+            boolean isLendable;
+
+            try {
+                yearOfPublication = Integer.parseInt(yearOfPublicationString);
+                finalEdition = Integer.parseInt(newEdition);
+                isLendable = Boolean.parseBoolean(newLendable);
+
+            } catch (NumberFormatException e) {
+                fileHandler.logAction("Error", "Invalid parameter (Year, Edition Number, Lendable).");
+                return;
+            }
+
+            String oldTitle = refBook.getTitle();
+            refBook.setTitle(newTitle);
+            refBook.setAuthor(newAuthor);
+            refBook.setYearOfPublication(yearOfPublication);
+            refBook.setISBN(newISBN);
+            refBook.setEditionNumber(finalEdition);
+            refBook.setLendable(isLendable);
+            manager.addItem(refBook.getUUID(), refBook);
+            fileHandler.logAction("Success", "Item " + oldTitle + " successfully updated.");
         }
     }
 
@@ -98,7 +247,7 @@ public class LibraryManagementApplication {
             return;
 
         manager.removeItem(itemToRemove, fileHandler);
-        fileHandler.logAction("Success", "Item '" +  itemToRemove.getTitle() + "' has been removed successfully.");
+        fileHandler.logAction("Success", "Item " + itemToRemove.getTitle() + " has been removed successfully.");
     }
 
     private static void addItem(LibraryManager manager, Scanner scanner, FileHandler fileHandler) {
@@ -163,12 +312,13 @@ public class LibraryManagementApplication {
         System.arraycopy(details, 0, factoryArgs, 3, details.length);
 
         try {
+            String uuid = UUID.randomUUID().toString();
             LibraryItemFactory factory = new LibraryItemFactory();
-            LibraryItem item = factory.createItem(type, factoryArgs);
+            LibraryItem item = factory.createItem(type, factoryArgs, uuid);
 
-            manager.addItem(item);
+            manager.addItem(uuid, item);
             fileHandler.logAction("Add item",
-                    "Item '" + item.getTitle() + "' (" + type + ") added successfully.");
+                    "Item " + item.getTitle() + " (" + type + ") added successfully.");
 
         } catch (NumberFormatException e) {
             fileHandler.logAction("Error", "Invalid number format detected (Year, Issue number, Volume, etc.). Operation failed.");
@@ -182,7 +332,7 @@ public class LibraryManagementApplication {
         String isbn = scanner.nextLine();
         System.out.print("Copies Count: ");
         String copies = scanner.nextLine();
-        System.out.print("State (1=EXIST, 2=LOANED): ");
+        System.out.print("State (1=EXIST, 2=LOANED, 3=BANNED): ");
         String state = scanner.nextLine();
 
         return new String[]{state, isbn, copies};
@@ -226,17 +376,17 @@ public class LibraryManagementApplication {
         fileHandler.logAction("Prompt", "Enter search key for " + operationName + " (title or author):");
         String searchKey = scanner.nextLine();
 
-        LibraryItem[] matchingItems = manager.searchLibraryItemByPartialMatch(searchKey);
+        List<LibraryItem> matchingItems = manager.searchLibraryItemByPartialMatch(searchKey);
 
-        if (matchingItems.length == 0) {
-            fileHandler.logAction(operationName + " Failed", "No items found matching '" + searchKey + "'.");
+        if (matchingItems.isEmpty()) {
+            fileHandler.logAction(operationName + " Failed", "No items found matching " + searchKey + ".");
             return null;
         }
 
-        fileHandler.logAction("Selection Required", "Found " + matchingItems.length + " matches. Select a number for " + operationName + ":");
+        fileHandler.logAction("Selection Required", "Found " + matchingItems.size() + " matches. Select a number for " + operationName + ":");
 
-        for (int i = 0; i < matchingItems.length; i++) {
-            LibraryItem item = matchingItems[i];
+        for (int i = 0; i < matchingItems.size(); i++) {
+            LibraryItem item = matchingItems.get(i);
             fileHandler.logAction("Match Found", "[" + (i + 1) + "] Title: " + item.getTitle() +
                     ", Author: " + item.getAuthor() + ", Year: " + item.getYearOfPublication() + " (Type: " + item.getClass().getSimpleName() + ")");
         }
@@ -255,12 +405,12 @@ public class LibraryManagementApplication {
             return null;
         }
 
-        if (selection < 1 || selection > matchingItems.length) {
+        if (selection < 1 || selection > matchingItems.size()) {
             fileHandler.logAction("Error", "Selection number out of range. " + operationName + " canceled.");
             return null;
         }
 
-        LibraryItem itemToSelect = matchingItems[selection - 1];
+        LibraryItem itemToSelect = matchingItems.get(selection - 1);
         fileHandler.logAction("Target Selected", operationName + " target: " + itemToSelect.getTitle());
         return itemToSelect;
     }
@@ -270,11 +420,12 @@ public class LibraryManagementApplication {
         System.out.println(" Library Management System CLI ");
         System.out.println("===============================");
         System.out.println("1.Add new book");
-        System.out.println("2.Delete book with title");
+        System.out.println("2.Delete book with title or author");
         System.out.println("3.Update book");
         System.out.println("4.Show all books");
         System.out.println("5.Search");
-        System.out.println("6.Exit");
+        System.out.println("6.Sorted list");
+        System.out.println("7.Exit");
         System.out.print("Choose a number between 1 and 5 : ");
     }
 }

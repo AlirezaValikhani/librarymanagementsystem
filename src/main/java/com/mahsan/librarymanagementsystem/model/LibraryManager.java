@@ -3,127 +3,76 @@ package com.mahsan.librarymanagementsystem.model;
 import com.mahsan.librarymanagementsystem.io.FileHandler;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 import com.mahsan.librarymanagementsystem.model.base.Searchable;
-import com.mahsan.librarymanagementsystem.model.generic.GenericLinkedList;
-import com.mahsan.librarymanagementsystem.model.generic.Node;
+
+import java.util.*;
 
 public class LibraryManager {
-    private GenericLinkedList<LibraryItem> items;
+    private HashMap<String, LibraryItem> items;
 
     public LibraryManager() {
-        this.items = new GenericLinkedList<>();
+        this.items = new HashMap<>();
     }
 
-    public void addItem(LibraryItem item) {
-        items.add(item);
+    public void addItem(String key, LibraryItem item) {
+        items.put(key, item);
     }
 
     public void removeItem(LibraryItem item, FileHandler fileHandler) {
-        items.remove(item, fileHandler);
+
+        if (items.remove(item.getUUID()) != null)
+            fileHandler.logAction("Remove item", "Item " + item.getTitle() + " removed successfully.");
+        else
+            fileHandler.logAction("Remove item failed", "Item " + item.getTitle() + " was not found.");
     }
 
     public void search(String query, FileHandler fileHandler) {
 
-        for (LibraryItem item : items) {
-            if (item instanceof Searchable && ((Searchable) item).matches(query))
-                item.display(fileHandler);
+        for (String key : items.keySet()) {
+            LibraryItem libraryItem = items.get(key);
+            if (libraryItem instanceof Searchable && ((Searchable) libraryItem).matches(query))
+                libraryItem.display(fileHandler);
         }
     }
 
     public void displayAll(FileHandler fileHandler) {
-        for (LibraryItem item : items) {
-            item.display(fileHandler);
+        for (String key : items.keySet()) {
+            LibraryItem libraryItem = items.get(key);
+            libraryItem.display(fileHandler);
             System.out.println("--------------------------------------------------------------------------------");
         }
 
         fileHandler.logAction("Display library items operation", "Items displayed.");
     }
 
-    public void updateItemFields(String title, String newTitle, String newAuthor, int newYear, FileHandler fileHandler) {
-        Node<LibraryItem> current = items.getHead();
+    public void updateItemFields(LibraryItem itemToUpdate, String newTitle, String newAuthor,
+                                 int newYear, FileHandler fileHandler) {
+        LibraryItem existingItem = items.get(itemToUpdate.getUUID());
 
-        while (current != null) {
-            LibraryItem libraryItem = current.getData();
+        if (existingItem != null) {
+            existingItem.setTitle(newTitle);
+            existingItem.setAuthor(newAuthor);
+            existingItem.setYearOfPublication(newYear);
 
-            if (libraryItem.getTitle().equals(title)) {
-                libraryItem.setTitle(newTitle);
-                libraryItem.setAuthor(newAuthor);
-                libraryItem.setYearOfPublication(newYear);
-
-                fileHandler.logAction("Update item", "Book with title " + title + " has been updated successfully.");
-                return;
-            }
-
-            current = current.getNext();
+            fileHandler.logAction("Update item success",
+                    "Item " + newTitle + " (" + existingItem.getClass().getSimpleName() + ") updated successfully.");
+        } else {
+            fileHandler.logAction("Update item failed",
+                    "Item with ID " + itemToUpdate.getUUID() + " doesn't exist in system!");
         }
-
-        fileHandler.logAction("Update item failed", "item with title " + title + " doesn't exist!");
     }
 
-    public void removeLibraryItemByTitle(String title, FileHandler fileHandler) {
-
-        if (items.getHead() == null)
-            fileHandler.logAction("Remove book fail", "There is no book in the library to remove!");
-
-        String searchKeyword = title.toLowerCase();
-
-        Node<LibraryItem> current = items.getHead();
-        LibraryItem itemToRemove = null;
-
-        while (current != null) {
-            LibraryItem currentBook = current.getData();
-
-            if (currentBook.getTitle().toLowerCase().contains(searchKeyword)) {
-                itemToRemove = currentBook;
-                break;
-            }
-            current = current.getNext();
-        }
-
-        if (itemToRemove != null) {
-            if (items.remove(itemToRemove, fileHandler)) {
-                return;
-            }
-        }
-
-        fileHandler.logAction("Remove book fail", "A book with title " + title + " was not found!");
-    }
-
-    public LibraryItem[] searchLibraryItemByPartialMatch(String searchKey) {
+    public List<LibraryItem> searchLibraryItemByPartialMatch(String searchKey) {
         String keyword = searchKey.toLowerCase();
 
-        int matchCount = 0;
-        Node<LibraryItem> current = items.getHead();
+        List<LibraryItem> matchingItems = new ArrayList<>();
 
-        while (current != null) {
-            LibraryItem libraryItem = current.getData();
+        for (LibraryItem libraryItem : items.values()) {
 
             boolean titleMatch = libraryItem.getTitle().toLowerCase().contains(keyword);
             boolean authorMatch = libraryItem.getAuthor().toLowerCase().contains(keyword);
 
-            if (titleMatch || authorMatch) {
-                matchCount++;
-            }
-            current = current.getNext();
-        }
-
-        if (matchCount == 0)
-            return new LibraryItem[0];
-
-        LibraryItem[] matchingItems = new LibraryItem[matchCount];
-        int index = 0;
-        current = items.getHead();
-
-        while (current != null) {
-            LibraryItem libraryItem = current.getData();
-
-            boolean titleMatch = libraryItem.getTitle().toLowerCase().contains(keyword);
-            boolean authorMatch = libraryItem.getAuthor().toLowerCase().contains(keyword);
-
-            if (titleMatch || authorMatch) {
-                matchingItems[index] = libraryItem;
-                index++;
-            }
-            current = current.getNext();
+            if (titleMatch || authorMatch)
+                matchingItems.add(libraryItem);
         }
 
         return matchingItems;
@@ -132,5 +81,22 @@ public class LibraryManager {
     public void remove(LibraryItem libraryItem) {
         items.remove(libraryItem, null);
         System.out.println("The book with title " + libraryItem.getTitle() + " has been removed successfully.");
+    }
+
+    public List<LibraryItem> getAllItemsAsList() {
+        return new ArrayList<>(items.values());
+    }
+
+    public List<LibraryItem> getSortedItems() {
+        List<LibraryItem> itemList = getAllItemsAsList();
+        Comparator<LibraryItem> comparator = new Comparator<LibraryItem>() {
+            @Override
+            public int compare(LibraryItem o1, LibraryItem o2) {
+                return o1.getTitle().compareToIgnoreCase(o2.getTitle());
+            }
+        };
+
+        itemList.sort(comparator);
+        return itemList;
     }
 }
