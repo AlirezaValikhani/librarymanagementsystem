@@ -9,6 +9,8 @@ public class Magazine extends LibraryItem {
     private int volumeNumber;
     private int issueNumber;
 
+    private static final FileHandler fileHandler = new FileHandler();
+
     public Magazine(String UUID, String title, String author, int yearOfPublication, int totalCopies, String ISSN, int volumeNumber, int issueNumber) {
         super(UUID, title, author, yearOfPublication, totalCopies);
         this.ISSN = ISSN;
@@ -41,7 +43,7 @@ public class Magazine extends LibraryItem {
     }
 
     @Override
-    public void display(FileHandler fileHandler) {
+    public void display() {
         fileHandler.logAction("Display", "--- Magazine Details ---");
         fileHandler.logAction("Display", "Title: " + getTitle());
         fileHandler.logAction("Display", "Author: " + getAuthor());

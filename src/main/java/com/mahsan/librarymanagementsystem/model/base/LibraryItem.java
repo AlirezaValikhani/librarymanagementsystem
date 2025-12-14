@@ -103,7 +103,7 @@ public abstract class LibraryItem implements Searchable {
         fileHandler.logAction("Borrowed copies report", "Borrowed copies: " + borrowedCopies);
     }
 
-    public abstract void display(FileHandler  fileHandler);
+    public abstract void display();
 
     public abstract boolean matches(String query);
 }

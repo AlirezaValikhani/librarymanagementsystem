@@ -9,6 +9,8 @@ public class ReferenceBook extends LibraryItem {
     private int editionNumber;
     private boolean isLendable = false;
 
+    private static final FileHandler fileHandler = new FileHandler();
+
     public ReferenceBook(String UUID, String title, String author, int yearOfPublication, int totalCopies, String ISBN, int editionNumber) {
         super(UUID, title, author, yearOfPublication, totalCopies);
         this.ISBN = ISBN;
@@ -40,7 +42,7 @@ public class ReferenceBook extends LibraryItem {
     }
 
     @Override
-    public void display(FileHandler fileHandler) {
+    public void display() {
         fileHandler.logAction("Display", "--- Reference Book Details ---");
         fileHandler.logAction("Display", "Title: " + getTitle());
         fileHandler.logAction("Display", "Author: " + getAuthor());

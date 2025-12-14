@@ -34,14 +34,14 @@ public class LibraryManager<T extends LibraryItem> {
         for (String key : items.keySet()) {
             LibraryItem libraryItem = items.get(key);
             if (libraryItem instanceof Searchable && ((Searchable) libraryItem).matches(query))
-                libraryItem.display(fileHandler);
+                libraryItem.display();
         }
     }
 
     public void displayAll() {
         for (String key : items.keySet()) {
             LibraryItem libraryItem = items.get(key);
-            libraryItem.display(fileHandler);
+            libraryItem.display();
             System.out.println("--------------------------------------------------------------------------------");
         }
 

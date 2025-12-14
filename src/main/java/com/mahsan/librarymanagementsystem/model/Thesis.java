@@ -9,6 +9,8 @@ public class Thesis extends LibraryItem {
     private String degreeLevel;
     private String advisorName;
 
+    private static final FileHandler fileHandler = new FileHandler();
+
     public Thesis(String UUID, String title, String author, int yearOfPublication, int totalCopies, String universityName, String degreeLevel, String advisorName) {
         super(UUID, title, author, yearOfPublication, totalCopies);
         this.universityName = universityName;
@@ -41,7 +43,7 @@ public class Thesis extends LibraryItem {
     }
 
     @Override
-    public void display(FileHandler fileHandler) {
+    public void display() {
         fileHandler.logAction("Display", "--- Thesis Details ---");
         fileHandler.logAction("Display", "Title: " + getTitle());
         fileHandler.logAction("Display", "Author: " + getAuthor());

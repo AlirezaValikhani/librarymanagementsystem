@@ -10,6 +10,8 @@ public class Book extends LibraryItem {
     private String ISBN;
     private String publisher;
 
+    private static final FileHandler fileHandler = new FileHandler();
+
     public Book(String UUID, String title, String author, int yearOfPublication, int totalCopies, BookState state, String ISBN, String publisher) {
         super(UUID, title, author, yearOfPublication, totalCopies);
         this.state = state;
@@ -42,7 +44,7 @@ public class Book extends LibraryItem {
     }
 
     @Override
-    public void display(FileHandler fileHandler) {
+    public void display() {
         fileHandler.logAction("Display", "--- Book Details ---");
         fileHandler.logAction("Display", "Title: " + getTitle());
         fileHandler.logAction("Display", "Author: " + getAuthor());

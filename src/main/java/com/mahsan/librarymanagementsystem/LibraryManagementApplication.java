@@ -143,7 +143,7 @@ public class LibraryManagementApplication {
         List<LibraryItem> sortedItems = manager.getSortedItems();
 
         for (LibraryItem libraryItem : sortedItems)
-            libraryItem.display(fileHandler);
+            libraryItem.display();
 
         fileHandler.logAction("Sorted list", "Sorted list successfully called.");
     }
