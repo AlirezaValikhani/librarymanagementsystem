@@ -29,9 +29,9 @@ class GenericLinkedListTest {
     @Test
     void testAddElementsAndCheckOrder() {
         list.add(new ReferenceBook(UUID.randomUUID().toString(), "ReferenceBook", "F_Author", 1990,
-                "1020304050123", 10));
+                2, "1020304050123", 10));
         list.add(new Thesis(UUID.randomUUID().toString(), "Thesis", "F_Author", 1995,
-                "MIT", "Bachelor", "Test"));
+                5, "MIT", "Bachelor", "Test"));
 
         assertNotNull(list.getHead());
         assertEquals("ReferenceBook", list.getHead().getData().getTitle());
@@ -41,7 +41,7 @@ class GenericLinkedListTest {
     @Test
     void testRemove() {
         Book testBook = new Book(UUID.randomUUID().toString(), "First", "F_Author", 1990,
-                BookState.EXIST, "1020304050123", 20);
+                4, BookState.EXIST, "1020304050123", "test");
         list.add(testBook);
 
         assertTrue(list.remove(testBook, fileHandler));
@@ -52,9 +52,9 @@ class GenericLinkedListTest {
     @Test
     void testRemoveNotFound() {
         Magazine existBook = new Magazine(UUID.randomUUID().toString(), "Exist", "E_Author", 1990,
-                "1234567891012", 10, 20);
+                5, "1234567891012", 10, 20);
         Magazine notFoundBook = new Magazine(UUID.randomUUID().toString(), "NotFound", "N_F_Author", 1990,
-                "1234567891012", 10, 20);
+                5, "1234567891012", 10, 20);
 
         list.add(existBook);
 
@@ -67,7 +67,7 @@ class GenericLinkedListTest {
     @Test
     void testRemoveFromEmpty() {
         Book randomBook = new Book(UUID.randomUUID().toString(), "Random", "R_Author", 1990,
-                BookState.EXIST, "1234567891012", 4);
+                3, BookState.EXIST, "1234567891012", "test");
 
         assertFalse(list.remove(randomBook, fileHandler));
     }

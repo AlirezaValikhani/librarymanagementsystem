@@ -20,15 +20,15 @@ class LibraryTest {
 
     @BeforeEach
     void setUp() {
-        libraryManager = new LibraryManager();
         fileHandler = new FileHandler();
+        libraryManager = new LibraryManager(fileHandler);
 
         book1 = new Book(UUID.randomUUID().toString(), "Data structure", "Someone", 2020,
-                BookState.EXIST, "1234567891012", 2);
+                4, BookState.EXIST, "1234567891012", "test");
         book2 = new Book(UUID.randomUUID().toString(), "Java persistence", "Author", 2022,
-                BookState.BORROWED, "1234567891012", 2);
+                4, BookState.BORROWED, "1234567891012", "test");
         book3 = new Book(UUID.randomUUID().toString(), "Java persistence", "OtherAuthor", 2023,
-                BookState.EXIST, "1234567891012", 2);
+                4, BookState.EXIST, "1234567891012", "test");
 
         libraryManager.addItem(UUID.randomUUID().toString(), book1);
         libraryManager.addItem(UUID.randomUUID().toString(), book2);

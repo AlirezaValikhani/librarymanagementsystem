@@ -9,14 +9,11 @@ public class Magazine extends LibraryItem {
     private int volumeNumber;
     private int issueNumber;
 
-    public Magazine(String UUID, String title, String author, int yearOfPublication, String ISSN, int volumeNumber, int issueNumber) {
-        super(UUID, title, author, yearOfPublication);
+    public Magazine(String UUID, String title, String author, int yearOfPublication, int totalCopies, String ISSN, int volumeNumber, int issueNumber) {
+        super(UUID, title, author, yearOfPublication, totalCopies);
         this.ISSN = ISSN;
         this.volumeNumber = volumeNumber;
         this.issueNumber = issueNumber;
-    }
-
-    public Magazine() {
     }
 
     public String getISSN() {
@@ -49,6 +46,7 @@ public class Magazine extends LibraryItem {
         fileHandler.logAction("Display", "Title: " + getTitle());
         fileHandler.logAction("Display", "Author: " + getAuthor());
         fileHandler.logAction("Display", "Year of Publication: " + getYearOfPublication());
+        fileHandler.logAction("Display", "Total copies: " + getTotalCopies());
         fileHandler.logAction("Display", "Volume Number: " + volumeNumber);
         fileHandler.logAction("Display", "Issue Number: " + issueNumber);
     }

@@ -1,9 +1,9 @@
-book,Think again,Walter,1990,1,1234567891012,10
+book,Think again,Walter,1990,1,1,1234567891012,Ali
 book,b,3
 
 
-MAGAZINE,Data structure,someone,2000,1110987654321,3,4
-reFeRenCe,On the meaning of life,Will Dorant,1950,12345678901111,3281,true
-tHesis,Some book,author name,2005,Tallin,bachelor,test
+MAGAZINE,Data structure,someone,2000,3,1110987654321,3,4
+reFeRenCe,On the meaning of life,Will Dorant,1950,7,12345678901111,3281,true
+tHesis,Some book,author name,2005,1,Tallin,bachelor,test
 
 Nothing,Nothing,1923,3,a,f,d,vb

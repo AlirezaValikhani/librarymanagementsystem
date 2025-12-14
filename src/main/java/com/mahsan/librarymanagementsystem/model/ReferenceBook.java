@@ -9,8 +9,8 @@ public class ReferenceBook extends LibraryItem {
     private int editionNumber;
     private boolean isLendable = false;
 
-    public ReferenceBook(String UUID, String title, String author, int yearOfPublication, String ISBN, int editionNumber) {
-        super(UUID, title, author, yearOfPublication);
+    public ReferenceBook(String UUID, String title, String author, int yearOfPublication, int totalCopies, String ISBN, int editionNumber) {
+        super(UUID, title, author, yearOfPublication, totalCopies);
         this.ISBN = ISBN;
         this.editionNumber = editionNumber;
     }
@@ -45,6 +45,7 @@ public class ReferenceBook extends LibraryItem {
         fileHandler.logAction("Display", "Title: " + getTitle());
         fileHandler.logAction("Display", "Author: " + getAuthor());
         fileHandler.logAction("Display", "Year of Publication: " + getYearOfPublication());
+        fileHandler.logAction("Display", "Total copies: " + getTotalCopies());
         fileHandler.logAction("Display", "Edition: " + editionNumber);
         fileHandler.logAction("Display", "Is Lendable: " + (isLendable ? "Yes" : "No"));
     }

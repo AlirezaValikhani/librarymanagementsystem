@@ -8,17 +8,13 @@ public class Book extends LibraryItem {
 
     private BookState state;
     private String ISBN;
-    private int numberOfCopies;
+    private String publisher;
 
-    public Book(String UUID, String title, String author, int yearOfPublication, BookState state, String ISBN, int numberOfCopies) {
-        super(UUID, title, author, yearOfPublication);
+    public Book(String UUID, String title, String author, int yearOfPublication, int totalCopies, BookState state, String ISBN, String publisher) {
+        super(UUID, title, author, yearOfPublication, totalCopies);
         this.state = state;
         this.ISBN = ISBN;
-        this.numberOfCopies = numberOfCopies;
-    }
-
-    public Book() {
-        super();
+        this.publisher = publisher;
     }
 
     public BookState getState() {
@@ -37,12 +33,12 @@ public class Book extends LibraryItem {
         this.ISBN = ISBN;
     }
 
-    public int getNumberOfCopies() {
-        return numberOfCopies;
+    public String getPublisher() {
+        return publisher;
     }
 
-    public void setNumberOfCopies(int numberOfCopies) {
-        this.numberOfCopies = numberOfCopies;
+    public void setPublisher(String publisher) {
+        this.publisher = publisher;
     }
 
     @Override
@@ -51,9 +47,10 @@ public class Book extends LibraryItem {
         fileHandler.logAction("Display", "Title: " + getTitle());
         fileHandler.logAction("Display", "Author: " + getAuthor());
         fileHandler.logAction("Display", "Year of Publication: " + getYearOfPublication());
+        fileHandler.logAction("Display", "Total copies: " + getTotalCopies());
         fileHandler.logAction("Display", "State: " + state);
         fileHandler.logAction("Display", "ISBN: " + ISBN);
-        fileHandler.logAction("Display", "Number of copies: " + numberOfCopies);
+        fileHandler.logAction("Display", "Publisher: " + publisher);
     }
 
     @Override
@@ -64,7 +61,7 @@ public class Book extends LibraryItem {
                     getYearOfPublication() == Integer.parseInt(query) ||
                     getISBN().equalsIgnoreCase(query) ||
                     getState().toString().equalsIgnoreCase(query) ||
-                    getNumberOfCopies() == Integer.parseInt(query.toLowerCase());
+                    getPublisher().equals(query.toLowerCase());
         } catch (NumberFormatException e) {
             return false;
         }
