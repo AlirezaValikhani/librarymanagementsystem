@@ -1,15 +1,14 @@
 package com.mahsan.librarymanagementsystem.model;
 
-import com.mahsan.librarymanagementsystem.io.FileHandler;
+import com.mahsan.librarymanagementsystem.io.Logger;
+import com.mahsan.librarymanagementsystem.model.base.Lendable;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 
-public class Magazine extends LibraryItem {
+public class Magazine extends LibraryItem implements Lendable {
 
     private String ISSN;
     private int volumeNumber;
     private int issueNumber;
-
-    private static final FileHandler fileHandler = new FileHandler();
 
     public Magazine(String UUID, String title, String author, int yearOfPublication, int totalCopies, String ISSN, int volumeNumber, int issueNumber) {
         super(UUID, title, author, yearOfPublication, totalCopies);
@@ -43,14 +42,14 @@ public class Magazine extends LibraryItem {
     }
 
     @Override
-    public void display() {
-        fileHandler.logAction("Display", "--- Magazine Details ---");
-        fileHandler.logAction("Display", "Title: " + getTitle());
-        fileHandler.logAction("Display", "Author: " + getAuthor());
-        fileHandler.logAction("Display", "Year of Publication: " + getYearOfPublication());
-        fileHandler.logAction("Display", "Total copies: " + getTotalCopies());
-        fileHandler.logAction("Display", "Volume Number: " + volumeNumber);
-        fileHandler.logAction("Display", "Issue Number: " + issueNumber);
+    public void display(Logger logger) {
+        logger.logAction("Display", "--- Magazine Details ---");
+        logger.logAction("Display", "Title: " + getTitle());
+        logger.logAction("Display", "Author: " + getAuthor());
+        logger.logAction("Display", "Year of Publication: " + getYearOfPublication());
+        logger.logAction("Display", "Total copies: " + getTotalCopies());
+        logger.logAction("Display", "Volume Number: " + volumeNumber);
+        logger.logAction("Display", "Issue Number: " + issueNumber);
     }
 
     @Override

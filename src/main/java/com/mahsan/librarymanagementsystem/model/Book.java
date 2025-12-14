@@ -1,16 +1,15 @@
 package com.mahsan.librarymanagementsystem.model;
 
-import com.mahsan.librarymanagementsystem.io.FileHandler;
+import com.mahsan.librarymanagementsystem.io.Logger;
+import com.mahsan.librarymanagementsystem.model.base.Lendable;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 import com.mahsan.librarymanagementsystem.model.enums.BookState;
 
-public class Book extends LibraryItem {
+public class Book extends LibraryItem implements Lendable {
 
     private BookState state;
     private String ISBN;
     private String publisher;
-
-    private static final FileHandler fileHandler = new FileHandler();
 
     public Book(String UUID, String title, String author, int yearOfPublication, int totalCopies, BookState state, String ISBN, String publisher) {
         super(UUID, title, author, yearOfPublication, totalCopies);
@@ -44,15 +43,15 @@ public class Book extends LibraryItem {
     }
 
     @Override
-    public void display() {
-        fileHandler.logAction("Display", "--- Book Details ---");
-        fileHandler.logAction("Display", "Title: " + getTitle());
-        fileHandler.logAction("Display", "Author: " + getAuthor());
-        fileHandler.logAction("Display", "Year of Publication: " + getYearOfPublication());
-        fileHandler.logAction("Display", "Total copies: " + getTotalCopies());
-        fileHandler.logAction("Display", "State: " + state);
-        fileHandler.logAction("Display", "ISBN: " + ISBN);
-        fileHandler.logAction("Display", "Publisher: " + publisher);
+    public void display(Logger logger) {
+        logger.logAction("Display", "--- Book Details ---");
+        logger.logAction("Display", "Title: " + getTitle());
+        logger.logAction("Display", "Author: " + getAuthor());
+        logger.logAction("Display", "Year of Publication: " + getYearOfPublication());
+        logger.logAction("Display", "Total copies: " + getTotalCopies());
+        logger.logAction("Display", "State: " + state);
+        logger.logAction("Display", "ISBN: " + ISBN);
+        logger.logAction("Display", "Publisher: " + publisher);
     }
 
     @Override

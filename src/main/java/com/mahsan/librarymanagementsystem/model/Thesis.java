@@ -1,15 +1,14 @@
 package com.mahsan.librarymanagementsystem.model;
 
-import com.mahsan.librarymanagementsystem.io.FileHandler;
+import com.mahsan.librarymanagementsystem.io.Logger;
+import com.mahsan.librarymanagementsystem.model.base.Lendable;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 
-public class Thesis extends LibraryItem {
+public class Thesis extends LibraryItem implements Lendable {
 
     private String universityName;
     private String degreeLevel;
     private String advisorName;
-
-    private static final FileHandler fileHandler = new FileHandler();
 
     public Thesis(String UUID, String title, String author, int yearOfPublication, int totalCopies, String universityName, String degreeLevel, String advisorName) {
         super(UUID, title, author, yearOfPublication, totalCopies);
@@ -43,15 +42,15 @@ public class Thesis extends LibraryItem {
     }
 
     @Override
-    public void display() {
-        fileHandler.logAction("Display", "--- Thesis Details ---");
-        fileHandler.logAction("Display", "Title: " + getTitle());
-        fileHandler.logAction("Display", "Author: " + getAuthor());
-        fileHandler.logAction("Display", "Year of Publication: " + getYearOfPublication());
-        fileHandler.logAction("Display", "Total copies: " + getTotalCopies());
-        fileHandler.logAction("Display", "University: " + universityName);
-        fileHandler.logAction("Display", "Degree Level: " + degreeLevel);
-        fileHandler.logAction("Display", "Advisor: " + advisorName);
+    public void display(Logger logger) {
+        logger.logAction("Display", "--- Thesis Details ---");
+        logger.logAction("Display", "Title: " + getTitle());
+        logger.logAction("Display", "Author: " + getAuthor());
+        logger.logAction("Display", "Year of Publication: " + getYearOfPublication());
+        logger.logAction("Display", "Total copies: " + getTotalCopies());
+        logger.logAction("Display", "University: " + universityName);
+        logger.logAction("Display", "Degree Level: " + degreeLevel);
+        logger.logAction("Display", "Advisor: " + advisorName);
     }
 
     @Override
