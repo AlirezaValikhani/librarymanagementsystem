@@ -4,10 +4,11 @@ import com.mahsan.librarymanagementsystem.exception.MissingParametersException;
 import com.mahsan.librarymanagementsystem.model.*;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 import com.mahsan.librarymanagementsystem.model.enums.BookState;
+import com.mahsan.librarymanagementsystem.model.enums.LibraryItemType;
 
 public class LibraryItemFactory {
 
-    public LibraryItem createItem(String type, String[] details, String uuid) {
+    public LibraryItem createItem(LibraryItemType type, String[] details, String uuid) {
 
         if (details.length < 3)
             throw new MissingParametersException("Insufficient details for item");
@@ -22,8 +23,8 @@ public class LibraryItemFactory {
             throw new MissingParametersException("Invalid year: " + details[2]);
         }
 
-        switch (type.toLowerCase()) {
-            case "book":
+        switch (type) {
+            case LibraryItemType.BOOK:
                 if (details.length < 6)
                     throw new MissingParametersException("Book requires state, ISBN, copies");
 
@@ -32,16 +33,16 @@ public class LibraryItemFactory {
                 int copies = Integer.parseInt(details[5].trim());
                 return new Book(uuid, title, author, year, state, isbn, copies);
 
-            case "magazine":
+            case LibraryItemType.MAGAZINE:
                 if (details.length < 6)
                     throw new MissingParametersException("Magazine requires ISSN, volume, issue");
 
-                String issn = details[3].trim();
+                String ISSN = details[3].trim();
                 int volume = Integer.parseInt(details[4].trim());
                 int issue = Integer.parseInt(details[5].trim());
-                return new Magazine(uuid, title, author, year, issn, volume, issue);
+                return new Magazine(uuid, title, author, year, ISSN, volume, issue);
 
-            case "thesis":
+            case LibraryItemType.THESIS:
                 if (details.length < 6)
                     throw new MissingParametersException("Thesis requires university, degree, advisor");
 
@@ -50,7 +51,7 @@ public class LibraryItemFactory {
                 String advisor = details[5].trim();
                 return new Thesis(uuid, title, author, year, university, degree, advisor);
 
-            case "reference":
+            case LibraryItemType.REFERENCE:
                 if (details.length < 6)
                     throw new MissingParametersException("Reference requires ISBN, edition, lendable");
 

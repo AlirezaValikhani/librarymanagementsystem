@@ -6,6 +6,7 @@ import com.mahsan.librarymanagementsystem.model.*;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 import com.mahsan.librarymanagementsystem.io.FileHandler;
 import com.mahsan.librarymanagementsystem.model.enums.BookState;
+import com.mahsan.librarymanagementsystem.model.enums.LibraryItemType;
 
 import java.util.List;
 import java.util.Scanner;
@@ -55,8 +56,13 @@ public class LibraryManagementApplication {
         scanner.close();
     }
 
-    private static void sortedList(LibraryManager manager,  FileHandler fileHandler) {
-        manager.getSortedItems().forEach(libraryItem -> libraryItem.display(fileHandler));
+    private static void sortedList(LibraryManager manager, FileHandler fileHandler) {
+
+        List<LibraryItem> sortedItems = manager.getSortedItems();
+
+        for (LibraryItem libraryItem : sortedItems)
+            libraryItem.display(fileHandler);
+
         fileHandler.logAction("Sorted list", "Sorted list successfully called.");
     }
 
@@ -81,8 +87,12 @@ public class LibraryManagementApplication {
         String newTitle = scanner.nextLine().trim();
         System.out.println("Current Author: " + itemToUpdate.getAuthor() + " | Enter new Author:");
         String newAuthor = scanner.nextLine().trim();
-        System.out.println("Current Year: " + itemToUpdate.getYearOfPublication() + " | Enter new Year:");
-        String yearOfPublication = scanner.nextLine().trim();
+        int yearOfPublication = getYearOfPublication(scanner, fileHandler, itemToUpdate);
+
+        if (yearOfPublication < 1) {
+            fileHandler.logAction("Error", "Negative numbers are not acceptable!");
+            return;
+        }
 
         try {
             if (itemToUpdate instanceof Book)
@@ -98,8 +108,20 @@ public class LibraryManagementApplication {
         }
     }
 
+    private static int getYearOfPublication(Scanner scanner, FileHandler fileHandler, LibraryItem itemToUpdate) {
+        fileHandler.logAction("Input", "Current Year: " + itemToUpdate.getYearOfPublication() + " | Enter new Year:");
+        String yearOfPublicationString = scanner.nextLine().trim();
+
+        try {
+            return Integer.parseInt(yearOfPublicationString);
+        } catch (NumberFormatException e) {
+            fileHandler.logAction("Error", "Invalid year of publication!");
+            return 0;
+        }
+    }
+
     private static void updateBookSpecifics(LibraryManager manager, Book book, String newTitle, String newAuthor,
-                                            String yearOfPublicationString, Scanner scanner, FileHandler fileHandler) {
+                                            int yearOfPublication, Scanner scanner, FileHandler fileHandler) {
         fileHandler.logAction("Update ISBN", "Current ISBN: " + book.getISBN() + " | Enter new ISBN (Leave empty to skip):");
         String newIsbn = scanner.nextLine().trim();
         fileHandler.logAction("Update number of copies", "Current Copies: " + book.getNumberOfCopies() + " | Enter new Copies Count (Leave empty to skip):");
@@ -108,12 +130,10 @@ public class LibraryManagementApplication {
         String bookStateString = scanner.nextLine().trim();
 
         if (!newIsbn.isEmpty() && !newCopies.isEmpty() && !bookStateString.isEmpty()) {
-            int yearOfPublication;
             int finalCopies;
             int bookState;
 
             try {
-                yearOfPublication = Integer.parseInt(yearOfPublicationString);
                 finalCopies = Integer.parseInt(newCopies);
                 bookState = Integer.parseInt(bookStateString);
             } catch (NumberFormatException e) {
@@ -134,7 +154,7 @@ public class LibraryManagementApplication {
     }
 
     private static void updateMagazineSpecifics(LibraryManager manager, Magazine magazine, String newTitle, String newAuthor,
-                                                String yearOfPublicationString, Scanner scanner, FileHandler fileHandler) {
+                                                int yearOfPublication, Scanner scanner, FileHandler fileHandler) {
         fileHandler.logAction("Update ISSN", "Current ISSN: " + magazine.getISSN() + " | Enter new ISSN (Leave empty to skip):");
         String newISSN = scanner.nextLine().trim();
         fileHandler.logAction("Update volume number", "Current Volume: " + magazine.getVolumeNumber() + " | Enter new Volume Number (Leave empty to skip):");
@@ -146,12 +166,10 @@ public class LibraryManagementApplication {
 
 
         if (!newISSN.isEmpty() && !newVolume.isEmpty() && !newIssue.isEmpty()) {
-            int yearOfPublication;
             int finalVolume;
             int finalIssue;
 
             try {
-                yearOfPublication = Integer.parseInt(yearOfPublicationString);
                 finalVolume = Integer.parseInt(newVolume);
                 finalIssue = Integer.parseInt(newIssue);
             } catch (NumberFormatException e) {
@@ -171,7 +189,7 @@ public class LibraryManagementApplication {
     }
 
     private static void updateThesisSpecifics(LibraryManager manager, Thesis thesis, String newTitle, String newAuthor,
-                                              String yearOfPublicationString, Scanner scanner, FileHandler fileHandler) {
+                                              int yearOfPublication, Scanner scanner, FileHandler fileHandler) {
         fileHandler.logAction("Update university name", "Current University: " + thesis.getUniversityName() + " | Enter new University Name (Leave empty to skip):");
         String newUniversity = scanner.nextLine().trim();
         fileHandler.logAction("Update advisor name", "Current Advisor: " + thesis.getAdvisorName() + " | Enter new Advisor Name (Leave empty to skip):");
@@ -180,14 +198,6 @@ public class LibraryManagementApplication {
         String newDegreeLevel = scanner.nextLine().trim();
 
         if (!newUniversity.isEmpty() && !newAdvisor.isEmpty() && !newDegreeLevel.isEmpty()) {
-            int yearOfPublication;
-
-            try {
-                yearOfPublication = Integer.parseInt(yearOfPublicationString);
-            } catch (NumberFormatException e) {
-                fileHandler.logAction("Error", "Invalid parameter (Year of publication)!");
-                return;
-            }
             String oldTitle = thesis.getTitle();
             thesis.setTitle(newTitle);
             thesis.setAuthor(newAuthor);
@@ -201,7 +211,7 @@ public class LibraryManagementApplication {
     }
 
     private static void updateReferenceSpecifics(LibraryManager manager, ReferenceBook refBook, String newTitle, String newAuthor,
-                                                 String yearOfPublicationString, Scanner scanner, FileHandler fileHandler) {
+                                                 int yearOfPublication, Scanner scanner, FileHandler fileHandler) {
         fileHandler.logAction("Update ISBN", "Current ISBN: " + refBook.getISBN() + " | Enter new ISBN (Leave empty to skip):");
         String newISBN = scanner.nextLine().trim();
         fileHandler.logAction("Update Edition number", "Current Edition: " + refBook.getEditionNumber() + " | Enter new Edition Number (Leave empty to skip):");
@@ -210,15 +220,12 @@ public class LibraryManagementApplication {
         String newLendable = scanner.nextLine().trim();
 
         if (!newISBN.isEmpty() && !newEdition.isEmpty() && !newLendable.isEmpty()) {
-            int yearOfPublication;
             int finalEdition;
             boolean isLendable;
 
             try {
-                yearOfPublication = Integer.parseInt(yearOfPublicationString);
                 finalEdition = Integer.parseInt(newEdition);
                 isLendable = Boolean.parseBoolean(newLendable);
-
             } catch (NumberFormatException e) {
                 fileHandler.logAction("Error", "Invalid parameter (Year, Edition Number, Lendable).");
                 return;
@@ -255,26 +262,7 @@ public class LibraryManagementApplication {
         fileHandler.logAction("Prompt", "--- Add New Item ---");
         fileHandler.logAction("Prompt", "Select item type: (1) Book, (2) Magazine, (3) Thesis, (4) Reference Book");
         System.out.print("Enter choice (1-4): ");
-        String typeChoice = scanner.nextLine().trim();
-
-        String type;
-        switch (typeChoice) {
-            case "1":
-                type = "book";
-                break;
-            case "2":
-                type = "magazine";
-                break;
-            case "3":
-                type = "thesis";
-                break;
-            case "4":
-                type = "reference";
-                break;
-            default:
-                fileHandler.logAction("Error", "Invalid item type selected. Operation canceled.");
-                return;
-        }
+        String type = scanner.nextLine().trim();
 
         fileHandler.logAction("Prompt", "--- Enter Common Details ---");
         System.out.print("Title: ");
@@ -286,20 +274,23 @@ public class LibraryManagementApplication {
 
         String[] details;
 
-        switch (type) {
-            case "book":
+        LibraryItemType itemType = LibraryItemType.fromValue(Integer.parseInt(type));
+
+        switch (itemType) {
+            case LibraryItemType.BOOK:
                 details = getBookDetails(scanner);
                 break;
-            case "magazine":
+            case LibraryItemType.MAGAZINE:
                 details = getMagazineDetails(scanner);
                 break;
-            case "thesis":
+            case LibraryItemType.THESIS:
                 details = getThesisDetails(scanner);
                 break;
-            case "reference":
+            case LibraryItemType.REFERENCE:
                 details = getReferenceDetails(scanner);
                 break;
             default:
+                fileHandler.logAction("Error", "Invalid item type selected. Operation canceled.");
                 return;
         }
 
@@ -314,7 +305,7 @@ public class LibraryManagementApplication {
         try {
             String uuid = UUID.randomUUID().toString();
             LibraryItemFactory factory = new LibraryItemFactory();
-            LibraryItem item = factory.createItem(type, factoryArgs, uuid);
+            LibraryItem item = factory.createItem(itemType, factoryArgs, uuid);
 
             manager.addItem(uuid, item);
             fileHandler.logAction("Add item",

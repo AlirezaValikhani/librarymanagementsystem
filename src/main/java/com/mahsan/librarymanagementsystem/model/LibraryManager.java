@@ -6,14 +6,14 @@ import com.mahsan.librarymanagementsystem.model.base.Searchable;
 
 import java.util.*;
 
-public class LibraryManager {
-    private HashMap<String, LibraryItem> items;
+public class LibraryManager<T extends LibraryItem> {
+    private HashMap<String, T> items;
 
     public LibraryManager() {
         this.items = new HashMap<>();
     }
 
-    public void addItem(String key, LibraryItem item) {
+    public void addItem(String key, T item) {
         items.put(key, item);
     }
 
@@ -89,12 +89,8 @@ public class LibraryManager {
 
     public List<LibraryItem> getSortedItems() {
         List<LibraryItem> itemList = getAllItemsAsList();
-        Comparator<LibraryItem> comparator = new Comparator<LibraryItem>() {
-            @Override
-            public int compare(LibraryItem o1, LibraryItem o2) {
-                return o1.getTitle().compareToIgnoreCase(o2.getTitle());
-            }
-        };
+        Comparator<LibraryItem> comparator =
+                (o1, o2) -> o1.getTitle().compareToIgnoreCase(o2.getTitle());
 
         itemList.sort(comparator);
         return itemList;

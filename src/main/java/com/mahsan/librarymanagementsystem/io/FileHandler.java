@@ -5,6 +5,7 @@ import com.mahsan.librarymanagementsystem.factory.LibraryItemFactory;
 import com.mahsan.librarymanagementsystem.model.LibraryManager;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 import com.mahsan.librarymanagementsystem.exception.LogWriteException;
+import com.mahsan.librarymanagementsystem.model.enums.LibraryItemType;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -34,7 +35,8 @@ public class FileHandler {
                     continue;
                 }
 
-                String type = allData[0].trim().toLowerCase();
+                String typeString= allData[0].trim().toLowerCase();
+                LibraryItemType type = LibraryItemType.valueOf(typeString.toUpperCase());
                 String[] details = new String[allData.length - 1];
                 System.arraycopy(allData, 1, details, 0, details.length);
 
@@ -51,6 +53,8 @@ public class FileHandler {
             throw new com.mahsan.librarymanagementsystem.exception.IOException("Error loading file: " + e.getMessage());
         } catch (MissingParametersException e) {
             logAction("Error in create item", "Missing parameters: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            logAction("Error in create item", "Invalid parameters: " + e.getMessage());
         }
     }
 
