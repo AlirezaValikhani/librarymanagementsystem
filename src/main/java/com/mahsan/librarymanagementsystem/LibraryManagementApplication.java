@@ -2,9 +2,10 @@ package com.mahsan.librarymanagementsystem;
 
 import com.mahsan.librarymanagementsystem.exception.MissingParametersException;
 import com.mahsan.librarymanagementsystem.factory.LibraryItemFactory;
+import com.mahsan.librarymanagementsystem.io.FileHandler;
 import com.mahsan.librarymanagementsystem.model.*;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
-import com.mahsan.librarymanagementsystem.io.FileHandler;
+import com.mahsan.librarymanagementsystem.model.dto.*;
 import com.mahsan.librarymanagementsystem.model.enums.BookState;
 import com.mahsan.librarymanagementsystem.model.enums.LibraryItemType;
 
@@ -19,56 +20,86 @@ public class LibraryManagementApplication {
     private static final String REMOVE_OPERATION_NAME = "Remove";
     private static final String RETURN_OPERATION_NAME = "Return";
 
+    private final AppContext context;
+
+    private LibraryManagementApplication(AppContext context) {
+        this.context = context;
+    }
+
     public static void main(String[] args) {
-        FileHandler fileHandler = new FileHandler();
-        LibraryManager manager = new LibraryManager(fileHandler);
-        Scanner scanner = new Scanner(System.in);
+        AppContext context = AppContext.defaultContext();
+        new LibraryManagementApplication(context).run();
+    }
+
+    private void run() {
         boolean runningFlag = true;
 
-        fileHandler.loadBooksFromFile(manager);
+        context.fileHandler.loadBooksFromFile(context.manager);
 
         while (runningFlag) {
             displayMenu();
-            String input = scanner.nextLine().trim();
+            String input = context.scanner.nextLine().trim();
 
             switch (input) {
                 case "1":
-                    addItem(manager, scanner, fileHandler);
+                    addItem(context.manager, context.scanner, context.fileHandler, context.factory);
                     break;
                 case "2":
-                    removeItem(manager, scanner, fileHandler);
+                    removeItem(context.manager, context.scanner, context.fileHandler);
                     break;
                 case "3":
-                    updateItem(manager, scanner, fileHandler);
+                    updateItem(context.manager, context.scanner, context.fileHandler);
                     break;
                 case "4":
-                    displayBooks(manager, fileHandler);
+                    displayBooks(context.manager, context.fileHandler);
                     break;
                 case "5":
-                    search(manager, scanner, fileHandler);
+                    search(context.manager, context.scanner, context.fileHandler);
                     break;
                 case "6":
-                    sortedList(manager, fileHandler);
+                    sortedList(context.manager, context.fileHandler);
                     break;
                 case "7":
-                    borrowItem(manager, scanner, fileHandler);
+                    borrowItem(context.manager, context.scanner, context.fileHandler);
                     break;
                 case "8":
-                    returnItem(manager, scanner, fileHandler);
+                    returnItem(context.manager, context.scanner, context.fileHandler);
                     break;
                 case "9":
-                    manager.displayAllBorrowedItems();
+                    context.manager.displayAllBorrowedItems();
                     break;
                 case "0":
                     runningFlag = false;
-                    fileHandler.logAction("Exit", "User exited.");
+                    context.fileHandler.logAction("Exit", "User exited.");
                     break;
                 default:
-                    fileHandler.logAction("CLI wrong input", "Invalid input. Choose a number between 1 and 5.");
+                    context.fileHandler.logAction("CLI wrong input", "Invalid input. Choose a number between 1 and 5.");
                     break;
             }
         }
-        scanner.close();
+        context.scanner.close();
+    }
+
+    private static class AppContext {
+        private final FileHandler fileHandler;
+        private final LibraryManager manager;
+        private final LibraryItemFactory factory;
+        private final Scanner scanner;
+
+        private AppContext(FileHandler fileHandler, LibraryManager manager, LibraryItemFactory factory, Scanner scanner) {
+            this.fileHandler = fileHandler;
+            this.manager = manager;
+            this.factory = factory;
+            this.scanner = scanner;
+        }
+
+        static AppContext defaultContext() {
+            FileHandler fileHandler = new FileHandler();
+            LibraryManager manager = new LibraryManager(fileHandler);
+            LibraryItemFactory factory = new LibraryItemFactory();
+            Scanner scanner = new Scanner(System.in);
+            return new AppContext(fileHandler, manager, factory, scanner);
+        }
     }
 
     private static void returnItem(LibraryManager manager, Scanner scanner, FileHandler fileHandler) {
@@ -130,7 +161,7 @@ public class LibraryManagementApplication {
 
         if (itemToBorrow.getAvailableCopies() <= 0) {
             fileHandler.logAction("Borrow Failed", "This book hasn't enough copies!");
-            itemToBorrow.getBorrowingStatus();
+            itemToBorrow.getBorrowingStatus(fileHandler);
             return;
         }
 
@@ -143,7 +174,7 @@ public class LibraryManagementApplication {
         List<LibraryItem> sortedItems = manager.getSortedItems();
 
         for (LibraryItem libraryItem : sortedItems)
-            libraryItem.display();
+            libraryItem.display(fileHandler);
 
         fileHandler.logAction("Sorted list", "Sorted list successfully called.");
     }
@@ -157,6 +188,11 @@ public class LibraryManagementApplication {
 
     private static void updateItem(LibraryManager manager, Scanner scanner, FileHandler fileHandler) {
         LibraryItem itemToUpdate = selectItemBySearch(manager, scanner, fileHandler, UPDATE_OPERATION_NAME);
+
+        if (itemToUpdate == null) {
+            fileHandler.logAction("Update canceled", "No item selected for update.");
+            return;
+        }
 
         fileHandler.logAction("Prompt", "--- Updating Item: " + itemToUpdate.getTitle() + " (" + itemToUpdate.getClass().getSimpleName() + ") ---");
 
@@ -330,7 +366,7 @@ public class LibraryManagementApplication {
         manager.removeItem(itemToRemove);
     }
 
-    private static void addItem(LibraryManager manager, Scanner scanner, FileHandler fileHandler) {
+    private static void addItem(LibraryManager manager, Scanner scanner, FileHandler fileHandler, LibraryItemFactory factory) {
 
         fileHandler.logAction("Prompt", "--- Add New Item ---");
         fileHandler.logAction("Prompt", "Select item type: (1) Book, (2) Magazine, (3) Thesis, (4) Reference Book");
@@ -347,54 +383,66 @@ public class LibraryManagementApplication {
         System.out.print("Total copies: ");
         String totalCopies = scanner.nextLine();
 
-        String[] details;
+        int year;
+        int total;
+        try {
+            year = Integer.parseInt(yearString.trim());
+            total = Integer.parseInt(totalCopies.trim());
+        } catch (NumberFormatException e) {
+            fileHandler.logAction("Error", "Invalid number format for year or total copies. Operation canceled.");
+            return;
+        }
 
-        LibraryItemType itemType = LibraryItemType.fromValue(Integer.parseInt(type));
+        LibraryItemCreateRequest request = null;
+        LibraryItemType itemType;
+
+        try {
+            itemType = LibraryItemType.fromValue(Integer.parseInt(type));
+        } catch (NumberFormatException e) {
+            fileHandler.logAction("Error", "Invalid item type format. Operation canceled.");
+            return;
+        } catch (IllegalArgumentException e) {
+            fileHandler.logAction("Error", "Unsupported item type selected. Operation canceled.");
+            return;
+        }
 
         switch (itemType) {
             case LibraryItemType.BOOK:
-                details = getBookDetails(scanner);
+                request = createBookRequest(scanner, title, author, year, total, fileHandler);
                 break;
             case LibraryItemType.MAGAZINE:
-                details = getMagazineDetails(scanner);
+                request = createMagazineRequest(scanner, title, author, year, total, fileHandler);
                 break;
             case LibraryItemType.THESIS:
-                details = getThesisDetails(scanner);
+                request = createThesisRequest(scanner, title, author, year, total, fileHandler);
                 break;
             case LibraryItemType.REFERENCE:
-                details = getReferenceDetails(scanner);
+                request = createReferenceRequest(scanner, title, author, year, total, fileHandler);
                 break;
             default:
                 fileHandler.logAction("Error", "Invalid item type selected. Operation canceled.");
                 return;
         }
 
-        String[] factoryArgs = new String[3 + details.length];
-
-        factoryArgs[0] = title;
-        factoryArgs[1] = author;
-        factoryArgs[2] = yearString;
-        factoryArgs[3] = totalCopies;
-
-        System.arraycopy(details, 0, factoryArgs, 3, details.length);
+        if (request == null) {
+            fileHandler.logAction("Error", "Invalid item details. Operation canceled.");
+            return;
+        }
 
         try {
             String uuid = UUID.randomUUID().toString();
-            LibraryItemFactory factory = new LibraryItemFactory();
-            LibraryItem item = factory.createItem(itemType, factoryArgs, uuid);
+            LibraryItem item = factory.createItem(request, uuid);
 
             manager.addItem(uuid, item);
             fileHandler.logAction("Add item",
                     "Item " + item.getTitle() + " (" + type + ") added successfully.");
 
-        } catch (NumberFormatException e) {
-            fileHandler.logAction("Error", "Invalid number format detected (Year, Issue number, Volume, etc.). Operation failed.");
         } catch (MissingParametersException | IllegalArgumentException e) {
             fileHandler.logAction("Error", "Data creation failed for " + type + ": " + e.getMessage());
         }
     }
 
-    private static String[] getBookDetails(Scanner scanner) {
+    private static BookCreateRequest createBookRequest(Scanner scanner, String title, String author, int year, int total, FileHandler logger) {
         System.out.print("ISBN: ");
         String isbn = scanner.nextLine();
         System.out.print("Publisher: ");
@@ -402,10 +450,16 @@ public class LibraryManagementApplication {
         System.out.print("State (1=EXIST, 2=LOANED, 3=BANNED): ");
         String state = scanner.nextLine();
 
-        return new String[]{state, isbn, publisher};
+        try {
+            BookState bookState = BookState.fromValue(Integer.parseInt(state.trim()));
+            return new BookCreateRequest(title, author, year, total, bookState, isbn, publisher);
+        } catch (Exception e) {
+            logger.logAction("Error", "Invalid book details: " + e.getMessage());
+            return null;
+        }
     }
 
-    private static String[] getMagazineDetails(Scanner scanner) {
+    private static MagazineCreateRequest createMagazineRequest(Scanner scanner, String title, String author, int year, int total, FileHandler logger) {
         System.out.print("ISSN: ");
         String issn = scanner.nextLine();
         System.out.print("Volume Number: ");
@@ -413,10 +467,17 @@ public class LibraryManagementApplication {
         System.out.print("Issue Number: ");
         String issue = scanner.nextLine();
 
-        return new String[]{issn, volume, issue};
+        try {
+            int volumeNumber = Integer.parseInt(volume.trim());
+            int issueNumber = Integer.parseInt(issue.trim());
+            return new MagazineCreateRequest(title, author, year, total, issn, volumeNumber, issueNumber);
+        } catch (Exception e) {
+            logger.logAction("Error", "Invalid magazine details: " + e.getMessage());
+            return null;
+        }
     }
 
-    private static String[] getThesisDetails(Scanner scanner) {
+    private static ThesisCreateRequest createThesisRequest(Scanner scanner, String title, String author, int year, int total, FileHandler logger) {
         System.out.print("University Name: ");
         String university = scanner.nextLine();
         System.out.print("Degree Level: ");
@@ -424,10 +485,15 @@ public class LibraryManagementApplication {
         System.out.print("Advisor Name: ");
         String advisor = scanner.nextLine();
 
-        return new String[]{university, degree, advisor};
+        try {
+            return new ThesisCreateRequest(title, author, year, total, university, degree, advisor);
+        } catch (Exception e) {
+            logger.logAction("Error", "Invalid thesis details: " + e.getMessage());
+            return null;
+        }
     }
 
-    private static String[] getReferenceDetails(Scanner scanner) {
+    private static ReferenceBookCreateRequest createReferenceRequest(Scanner scanner, String title, String author, int year, int total, FileHandler logger) {
         System.out.print("ISBN: ");
         String refIsbn = scanner.nextLine();
         System.out.print("Edition Number: ");
@@ -435,7 +501,14 @@ public class LibraryManagementApplication {
         System.out.print("Is Lendable (true/false): ");
         String lendable = scanner.nextLine();
 
-        return new String[]{refIsbn, edition, lendable};
+        try {
+            int editionNumber = Integer.parseInt(edition.trim());
+            boolean isLendable = Boolean.parseBoolean(lendable.trim());
+            return new ReferenceBookCreateRequest(title, author, year, total, refIsbn, editionNumber, isLendable);
+        } catch (Exception e) {
+            logger.logAction("Error", "Invalid reference details: " + e.getMessage());
+            return null;
+        }
     }
 
     private static LibraryItem selectItemBySearch(LibraryManager manager, Scanner scanner,

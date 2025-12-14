@@ -1,6 +1,6 @@
 package com.mahsan.librarymanagementsystem.model.generic;
 
-import com.mahsan.librarymanagementsystem.io.FileHandler;
+import com.mahsan.librarymanagementsystem.io.Logger;
 
 import java.util.Iterator;
 
@@ -31,7 +31,7 @@ public class GenericLinkedList<T> implements Iterable<T> {
         current.next = newNode;
     }
 
-    public boolean remove(T data, FileHandler fileHandler) {
+    public boolean remove(T data, Logger logger) {
         if (head == null)
             return false;
 
@@ -49,7 +49,7 @@ public class GenericLinkedList<T> implements Iterable<T> {
         }
 
         if (current == null) {
-            fileHandler.logAction("Error", "Data not found!");
+            logger.logAction("Error", "Data not found!");
             return false;
         }
 
@@ -57,16 +57,16 @@ public class GenericLinkedList<T> implements Iterable<T> {
         return true;
     }
 
-    public void display(FileHandler fileHandler) {
+    public void display(Logger logger) {
         Node<T> current = head;
 
         if (current == null) {
-            fileHandler.logAction("Display Content", "List is empty!");
+            logger.logAction("Display Content", "List is empty!");
             return;
         }
 
         while (current != null) {
-            fileHandler.logAction("Item Detail", current.data.toString());
+            logger.logAction("Item Detail", current.data.toString());
             current = current.next;
         }
     }
