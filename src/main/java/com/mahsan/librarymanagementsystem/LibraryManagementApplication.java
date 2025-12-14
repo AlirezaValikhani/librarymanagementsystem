@@ -13,9 +13,15 @@ import java.util.Scanner;
 import java.util.UUID;
 
 public class LibraryManagementApplication {
+
+    public static final String BORROW_OPERATION_NAME = "Borrow";
+    private static final String UPDATE_OPERATION_NAME = "Update";
+    private static final String REMOVE_OPERATION_NAME = "Remove";
+    private static final String RETURN_OPERATION_NAME = "Return";
+
     public static void main(String[] args) {
-        LibraryManager manager = new LibraryManager();
         FileHandler fileHandler = new FileHandler();
+        LibraryManager manager = new LibraryManager(fileHandler);
         Scanner scanner = new Scanner(System.in);
         boolean runningFlag = true;
 
@@ -45,6 +51,15 @@ public class LibraryManagementApplication {
                     sortedList(manager, fileHandler);
                     break;
                 case "7":
+                    borrowItem(manager, scanner, fileHandler);
+                    break;
+                case "8":
+                    returnItem(manager, scanner, fileHandler);
+                    break;
+                case "9":
+                    manager.displayAllBorrowedItems();
+                    break;
+                case "0":
                     runningFlag = false;
                     fileHandler.logAction("Exit", "User exited.");
                     break;
@@ -54,6 +69,73 @@ public class LibraryManagementApplication {
             }
         }
         scanner.close();
+    }
+
+    private static void returnItem(LibraryManager manager, Scanner scanner, FileHandler fileHandler) {
+        fileHandler.logAction("Prompt", "--- Return book ---");
+
+        LibraryItem itemToReturn = selectItemBySearch(manager, scanner, fileHandler, RETURN_OPERATION_NAME);
+
+        if (itemToReturn == null) {
+            fileHandler.logAction("Return Canceled", "There is no item returned.");
+            return;
+        }
+
+        List<RentRecord> activeRecords = itemToReturn.getRentRecords().stream()
+                .filter(rentRecord -> rentRecord.getReturnDate() == null)
+                .toList();
+
+        if (activeRecords.isEmpty()) {
+            fileHandler.logAction("Return Failed", itemToReturn.getTitle() + " There is no active rent record.");
+            return;
+        }
+
+        fileHandler.logAction("Selection Required", "Choose active records for: " + itemToReturn.getTitle());
+        for (int i = 0; i < activeRecords.size(); i++) {
+            RentRecord record = activeRecords.get(i);
+            fileHandler.logAction("Active Record",
+                    String.format("[%d] Record ID: %d | Borrow Date: %s",
+                            i + 1, record.getRecordId(), record.getBorrowDate()));
+        }
+
+        fileHandler.logAction("Prompt", "Enter the Record ID for return (or 0 to cancel):");
+        String recordIdString = scanner.nextLine().trim();
+        int recordId;
+
+        try {
+            recordId = Integer.parseInt(recordIdString);
+            if (recordId == 0) return;
+
+            if (recordId > 0 && recordId <= activeRecords.size())
+                recordId = activeRecords.get(recordId - 1).getRecordId();
+
+        } catch (NumberFormatException e) {
+            fileHandler.logAction("Return failed", "Wrong record ID format! Return cancelled.");
+            return;
+        }
+
+        if (!manager.returnItem(itemToReturn.getUUID(), recordId))
+            fileHandler.logAction("Return Failed", "Error while recording the return or the Record ID was not found.");
+    }
+
+    private static void borrowItem(LibraryManager manager, Scanner scanner, FileHandler fileHandler) {
+        fileHandler.logAction("Prompt", "--- Borrow books ---");
+
+        LibraryItem itemToBorrow = selectItemBySearch(manager, scanner, fileHandler, BORROW_OPERATION_NAME);
+
+        if (itemToBorrow == null) {
+            fileHandler.logAction("Borrow Canceled", "Item doesn't exists!");
+            return;
+        }
+
+        if (itemToBorrow.getAvailableCopies() <= 0) {
+            fileHandler.logAction("Borrow Failed", "This book hasn't enough copies!");
+            itemToBorrow.getBorrowingStatus();
+            return;
+        }
+
+        if (!manager.borrowItem(itemToBorrow.getUUID()))
+            fileHandler.logAction("Borrow Failed", "Borrow Failed!");
     }
 
     private static void sortedList(LibraryManager manager, FileHandler fileHandler) {
@@ -70,16 +152,11 @@ public class LibraryManagementApplication {
         fileHandler.logAction("Searching", "Enter anything to search in library: ");
         String query = scanner.nextLine();
 
-        manager.search(query, fileHandler);
+        manager.search(query);
     }
 
     private static void updateItem(LibraryManager manager, Scanner scanner, FileHandler fileHandler) {
-        LibraryItem itemToUpdate = selectItemBySearch(manager, scanner, fileHandler, "Update");
-
-        if (itemToUpdate == null) {
-            fileHandler.logAction("Update canceled", "No item selected or found.");
-            return;
-        }
+        LibraryItem itemToUpdate = selectItemBySearch(manager, scanner, fileHandler, UPDATE_OPERATION_NAME);
 
         fileHandler.logAction("Prompt", "--- Updating Item: " + itemToUpdate.getTitle() + " (" + itemToUpdate.getClass().getSimpleName() + ") ---");
 
@@ -89,8 +166,8 @@ public class LibraryManagementApplication {
         String newAuthor = scanner.nextLine().trim();
         int yearOfPublication = getYearOfPublication(scanner, fileHandler, itemToUpdate);
 
-        if (yearOfPublication < 1) {
-            fileHandler.logAction("Error", "Negative numbers are not acceptable!");
+        if (yearOfPublication <= 0) {
+            fileHandler.logAction("Error", "Invalid year of publication!");
             return;
         }
 
@@ -115,7 +192,6 @@ public class LibraryManagementApplication {
         try {
             return Integer.parseInt(yearOfPublicationString);
         } catch (NumberFormatException e) {
-            fileHandler.logAction("Error", "Invalid year of publication!");
             return 0;
         }
     }
@@ -124,20 +200,18 @@ public class LibraryManagementApplication {
                                             int yearOfPublication, Scanner scanner, FileHandler fileHandler) {
         fileHandler.logAction("Update ISBN", "Current ISBN: " + book.getISBN() + " | Enter new ISBN (Leave empty to skip):");
         String newIsbn = scanner.nextLine().trim();
-        fileHandler.logAction("Update number of copies", "Current Copies: " + book.getNumberOfCopies() + " | Enter new Copies Count (Leave empty to skip):");
-        String newCopies = scanner.nextLine().trim();
+        fileHandler.logAction("Update publisher", "Current Publisher: " + book.getPublisher() + " | Enter new Publisher (Leave empty to skip):");
+        String newPublisher = scanner.nextLine().trim();
         fileHandler.logAction("Update book state", "Current Book States: " + book.getState() + " | Enter number to chose Book State (1: Exists, 2: Borrowed, 3: Banned, Leave empty to skip):");
         String bookStateString = scanner.nextLine().trim();
 
-        if (!newIsbn.isEmpty() && !newCopies.isEmpty() && !bookStateString.isEmpty()) {
-            int finalCopies;
+        if (!newIsbn.isEmpty() && !newPublisher.isEmpty() && !bookStateString.isEmpty()) {
             int bookState;
 
             try {
-                finalCopies = Integer.parseInt(newCopies);
                 bookState = Integer.parseInt(bookStateString);
             } catch (NumberFormatException e) {
-                fileHandler.logAction("Error", "Invalid parameter (ISBN, Number of copies, Book State)");
+                fileHandler.logAction("Error", "Invalid parameter (ISBN, Book State)");
                 return;
             }
 
@@ -146,7 +220,7 @@ public class LibraryManagementApplication {
             book.setAuthor(newAuthor);
             book.setYearOfPublication(yearOfPublication);
             book.setISBN(newIsbn);
-            book.setNumberOfCopies(finalCopies);
+            book.setPublisher(newPublisher);
             book.setState(BookState.fromValue(bookState));
             manager.addItem(book.getUUID(), book);
             fileHandler.logAction("Success", "Item " + oldTitle + " successfully updated.");
@@ -244,17 +318,16 @@ public class LibraryManagementApplication {
     }
 
     private static void displayBooks(LibraryManager libraryManager, FileHandler fileHandler) {
-        libraryManager.displayAll(fileHandler);
+        libraryManager.displayAll();
     }
 
     private static void removeItem(LibraryManager manager, Scanner scanner, FileHandler fileHandler) {
-        LibraryItem itemToRemove = selectItemBySearch(manager, scanner, fileHandler, "Remove");
+        LibraryItem itemToRemove = selectItemBySearch(manager, scanner, fileHandler, REMOVE_OPERATION_NAME);
 
         if (itemToRemove == null)
             return;
 
-        manager.removeItem(itemToRemove, fileHandler);
-        fileHandler.logAction("Success", "Item " + itemToRemove.getTitle() + " has been removed successfully.");
+        manager.removeItem(itemToRemove);
     }
 
     private static void addItem(LibraryManager manager, Scanner scanner, FileHandler fileHandler) {
@@ -271,6 +344,8 @@ public class LibraryManagementApplication {
         String author = scanner.nextLine();
         System.out.print("Year of Publication: ");
         String yearString = scanner.nextLine();
+        System.out.print("Total copies: ");
+        String totalCopies = scanner.nextLine();
 
         String[] details;
 
@@ -299,6 +374,7 @@ public class LibraryManagementApplication {
         factoryArgs[0] = title;
         factoryArgs[1] = author;
         factoryArgs[2] = yearString;
+        factoryArgs[3] = totalCopies;
 
         System.arraycopy(details, 0, factoryArgs, 3, details.length);
 
@@ -321,12 +397,12 @@ public class LibraryManagementApplication {
     private static String[] getBookDetails(Scanner scanner) {
         System.out.print("ISBN: ");
         String isbn = scanner.nextLine();
-        System.out.print("Copies Count: ");
-        String copies = scanner.nextLine();
+        System.out.print("Publisher: ");
+        String publisher = scanner.nextLine();
         System.out.print("State (1=EXIST, 2=LOANED, 3=BANNED): ");
         String state = scanner.nextLine();
 
-        return new String[]{state, isbn, copies};
+        return new String[]{state, isbn, publisher};
     }
 
     private static String[] getMagazineDetails(Scanner scanner) {
@@ -416,7 +492,10 @@ public class LibraryManagementApplication {
         System.out.println("4.Show all books");
         System.out.println("5.Search");
         System.out.println("6.Sorted list");
-        System.out.println("7.Exit");
+        System.out.println("7.Borrow book");
+        System.out.println("8.Return book");
+        System.out.println("9.Show borrowed books");
+        System.out.println("0.Exit");
         System.out.print("Choose a number between 1 and 5 : ");
     }
 }
