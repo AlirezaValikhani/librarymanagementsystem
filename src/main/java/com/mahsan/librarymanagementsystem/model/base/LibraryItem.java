@@ -1,6 +1,6 @@
 package com.mahsan.librarymanagementsystem.model.base;
 
-import com.mahsan.librarymanagementsystem.io.FileHandler;
+import com.mahsan.librarymanagementsystem.io.Logger;
 import com.mahsan.librarymanagementsystem.model.RentRecord;
 
 import java.util.ArrayList;
@@ -15,8 +15,6 @@ public abstract class LibraryItem implements Searchable {
     private int totalCopies;
     private int availableCopies;
     private List<RentRecord> rentRecords;
-
-    private static final FileHandler fileHandler = new FileHandler();
 
     public LibraryItem(String UUID, String title, String author, int yearOfPublication, int totalCopies) {
         this.UUID = UUID;
@@ -98,12 +96,12 @@ public abstract class LibraryItem implements Searchable {
         return false;
     }
 
-    public void getBorrowingStatus() {
+    public void getBorrowingStatus(Logger logger) {
         int borrowedCopies = totalCopies - availableCopies;
-        fileHandler.logAction("Borrowed copies report", "Borrowed copies: " + borrowedCopies);
+        logger.logAction("Borrowed copies report", "Borrowed copies: " + borrowedCopies);
     }
 
-    public abstract void display();
+    public abstract void display(Logger logger);
 
     public abstract boolean matches(String query);
 }

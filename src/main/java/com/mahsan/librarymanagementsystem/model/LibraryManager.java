@@ -1,19 +1,22 @@
 package com.mahsan.librarymanagementsystem.model;
 
-import com.mahsan.librarymanagementsystem.io.FileHandler;
+import com.mahsan.librarymanagementsystem.io.Logger;
+import com.mahsan.librarymanagementsystem.model.base.Lendable;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
-import com.mahsan.librarymanagementsystem.model.base.Searchable;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class LibraryManager<T extends LibraryItem> {
 
     private HashMap<String, T> items;
-    private final FileHandler fileHandler;
+    private final Logger logger;
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public LibraryManager(FileHandler fileHandler) {
-        this.fileHandler = fileHandler;
+    public LibraryManager(Logger logger) {
+        this.logger = logger;
         this.items = new HashMap<>();
     }
 
@@ -24,28 +27,28 @@ public class LibraryManager<T extends LibraryItem> {
     public void removeItem(LibraryItem item) {
 
         if (items.remove(item.getUUID()) != null)
-            fileHandler.logAction("Remove item", "Item " + item.getTitle() + " removed successfully.");
+            logger.logAction("Remove item", "Item " + item.getTitle() + " removed successfully.");
         else
-            fileHandler.logAction("Remove item failed", "Item " + item.getTitle() + " was not found.");
+            logger.logAction("Remove item failed", "Item " + item.getTitle() + " was not found.");
     }
 
     public void search(String query) {
 
         for (String key : items.keySet()) {
             LibraryItem libraryItem = items.get(key);
-            if (libraryItem instanceof Searchable && ((Searchable) libraryItem).matches(query))
-                libraryItem.display();
+            if (libraryItem != null && (libraryItem).matches(query))
+                libraryItem.display(logger);
         }
     }
 
     public void displayAll() {
         for (String key : items.keySet()) {
             LibraryItem libraryItem = items.get(key);
-            libraryItem.display();
+            libraryItem.display(logger);
             System.out.println("--------------------------------------------------------------------------------");
         }
 
-        fileHandler.logAction("Display library items operation", "Items displayed.");
+        logger.logAction("Display library items operation", "Items displayed.");
     }
 
     public void updateItemFields(LibraryItem itemToUpdate, String newTitle, String newAuthor, int newYear) {
@@ -56,10 +59,10 @@ public class LibraryManager<T extends LibraryItem> {
             existingItem.setAuthor(newAuthor);
             existingItem.setYearOfPublication(newYear);
 
-            fileHandler.logAction("Update item success",
+            logger.logAction("Update item success",
                     "Item " + newTitle + " (" + existingItem.getClass().getSimpleName() + ") updated successfully.");
         } else {
-            fileHandler.logAction("Update item failed",
+            logger.logAction("Update item failed",
                     "Item with ID " + itemToUpdate.getUUID() + " doesn't exist in system!");
         }
     }
@@ -103,17 +106,28 @@ public class LibraryManager<T extends LibraryItem> {
         LibraryItem item = items.get(itemUUID);
 
         if (item == null) {
-            fileHandler.logAction("Borrow failed", "Item not fount!");
+            logger.logAction("Borrow failed", "Item not found!");
+            return false;
+        }
+
+        if (!(item instanceof Lendable)) {
+            logger.logAction("Borrow failed", "Item " + item.getTitle() + " is not lendable.");
+            return false;
+        }
+
+        if (item instanceof ReferenceBook referenceBook && !referenceBook.isLendable()) {
+            logger.logAction("Borrow failed", "Reference book " + item.getTitle() + " is marked as non-lendable.");
             return false;
         }
 
         if (item.decreaseAvailableCopies()) {
-            RentRecord record = new RentRecord(itemUUID, LocalDate.now());
+            LocalDateTime rentTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+            RentRecord record = new RentRecord(itemUUID, rentTime);
             item.getRentRecords().add(record);
-            fileHandler.logAction("Borrow item", "Item " + item.getTitle() + " borrowed successfully.");
+            logger.logAction("Borrow item", "Item " + item.getTitle() + " borrowed successfully.");
             return true;
         } else {
-            fileHandler.logAction("Borrow failed", "Item " + item.getTitle() + " has no available copies!");
+            logger.logAction("Borrow failed", "Item " + item.getTitle() + " has no available copies!");
             return false;
         }
     }
@@ -122,7 +136,17 @@ public class LibraryManager<T extends LibraryItem> {
         LibraryItem item = items.get(itemUUID);
 
         if (item == null) {
-            fileHandler.logAction("Error", "Item not found!");
+            logger.logAction("Error", "Item not found!");
+            return false;
+        }
+
+        if (!(item instanceof Lendable)) {
+            logger.logAction("Error", "Item " + item.getTitle() + " is not lendable.");
+            return false;
+        }
+
+        if (item instanceof ReferenceBook referenceBook && !referenceBook.isLendable()) {
+            logger.logAction("Error", "Reference book " + item.getTitle() + " is marked as non-lendable.");
             return false;
         }
 
@@ -131,22 +155,23 @@ public class LibraryManager<T extends LibraryItem> {
                 .findFirst();
 
         if (rentRecord.isEmpty()) {
-            fileHandler.logAction("Error", "Item not found!");
+            logger.logAction("Error", "Item not found!");
             return false;
         }
 
         RentRecord recordToUpdate = rentRecord.get();
-        recordToUpdate.setReturnDate(LocalDate.now());
+        LocalDateTime returnDate = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+        recordToUpdate.setReturnDate(returnDate);
 
         item.increaseAvailableCopies();
 
-        fileHandler.logAction("Return", "Successfully returned: " + item.getTitle() +
+        logger.logAction("Return", "Successfully returned: " + item.getTitle() +
                 " | Record ID: " + recordId + " | New Available Copies: " + item.getAvailableCopies());
         return true;
     }
 
     public void displayAllBorrowedItems() {
-        fileHandler.logAction("Report", "--- Currently Borrowed Items ---");
+        logger.logAction("Report", "--- Currently Borrowed Items ---");
         boolean foundBorrowed = false;
 
         for (LibraryItem item : items.values()) {
@@ -156,17 +181,17 @@ public class LibraryManager<T extends LibraryItem> {
                     .toList();
 
             if (!borrowedItems.isEmpty()) {
-                fileHandler.logAction("Borrowed items", "Title: " + item.getTitle());
+                logger.logAction("Borrowed items", "Title: " + item.getTitle());
                 foundBorrowed = true;
             }
 
             for (RentRecord record : borrowedItems) {
-                fileHandler.logAction("Record details",
+                logger.logAction("Record details",
                         String.format("Record id: %d | Borrow date: %s", record.getRecordId(), record.getBorrowDate()));
             }
         }
 
         if (!foundBorrowed)
-            fileHandler.logAction("Report", "No items borrowed!");
+            logger.logAction("Report", "No items borrowed!");
     }
 }
