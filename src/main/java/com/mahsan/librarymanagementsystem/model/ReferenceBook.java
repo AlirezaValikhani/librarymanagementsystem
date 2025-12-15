@@ -1,15 +1,14 @@
 package com.mahsan.librarymanagementsystem.model;
 
-import com.mahsan.librarymanagementsystem.io.FileHandler;
+import com.mahsan.librarymanagementsystem.io.Logger;
+import com.mahsan.librarymanagementsystem.model.base.Lendable;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 
-public class ReferenceBook extends LibraryItem {
+public class ReferenceBook extends LibraryItem implements Lendable {
 
     private String ISBN;
     private int editionNumber;
     private boolean isLendable = false;
-
-    private static final FileHandler fileHandler = new FileHandler();
 
     public ReferenceBook(String UUID, String title, String author, int yearOfPublication, int totalCopies, String ISBN, int editionNumber) {
         super(UUID, title, author, yearOfPublication, totalCopies);
@@ -42,14 +41,14 @@ public class ReferenceBook extends LibraryItem {
     }
 
     @Override
-    public void display() {
-        fileHandler.logAction("Display", "--- Reference Book Details ---");
-        fileHandler.logAction("Display", "Title: " + getTitle());
-        fileHandler.logAction("Display", "Author: " + getAuthor());
-        fileHandler.logAction("Display", "Year of Publication: " + getYearOfPublication());
-        fileHandler.logAction("Display", "Total copies: " + getTotalCopies());
-        fileHandler.logAction("Display", "Edition: " + editionNumber);
-        fileHandler.logAction("Display", "Is Lendable: " + (isLendable ? "Yes" : "No"));
+    public void display(Logger logger) {
+        logger.logAction("Display", "--- Reference Book Details ---");
+        logger.logAction("Display", "Title: " + getTitle());
+        logger.logAction("Display", "Author: " + getAuthor());
+        logger.logAction("Display", "Year of Publication: " + getYearOfPublication());
+        logger.logAction("Display", "Total copies: " + getTotalCopies());
+        logger.logAction("Display", "Edition: " + editionNumber);
+        logger.logAction("Display", "Is Lendable: " + (isLendable ? "Yes" : "No"));
     }
 
     @Override

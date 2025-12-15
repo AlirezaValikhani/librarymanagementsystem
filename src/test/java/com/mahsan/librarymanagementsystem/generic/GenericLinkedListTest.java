@@ -3,6 +3,7 @@ package com.mahsan.librarymanagementsystem.generic;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.mahsan.librarymanagementsystem.io.FileHandler;
+import com.mahsan.librarymanagementsystem.io.Logger;
 import com.mahsan.librarymanagementsystem.model.Magazine;
 import com.mahsan.librarymanagementsystem.model.ReferenceBook;
 import com.mahsan.librarymanagementsystem.model.Thesis;
@@ -18,12 +19,12 @@ import java.util.UUID;
 class GenericLinkedListTest {
 
     private GenericLinkedList<LibraryItem> list;
-    private FileHandler fileHandler;
+    private Logger logger;
 
     @BeforeEach
     void setUp() {
         list = new GenericLinkedList<>();
-        fileHandler = new FileHandler();
+        logger = new FileHandler();
     }
 
     @Test
@@ -44,7 +45,7 @@ class GenericLinkedListTest {
                 4, BookState.EXIST, "1020304050123", "test");
         list.add(testBook);
 
-        assertTrue(list.remove(testBook, fileHandler));
+        assertTrue(list.remove(testBook, logger));
         assertNull(list.getHead());
         assertTrue(list.isEmpty());
     }
@@ -58,7 +59,7 @@ class GenericLinkedListTest {
 
         list.add(existBook);
 
-        assertFalse(list.remove(notFoundBook, fileHandler));
+        assertFalse(list.remove(notFoundBook, logger));
 
         assertNotNull(list.getHead());
         assertEquals("Exist", list.getHead().getData().getTitle());
@@ -69,6 +70,6 @@ class GenericLinkedListTest {
         Book randomBook = new Book(UUID.randomUUID().toString(), "Random", "R_Author", 1990,
                 3, BookState.EXIST, "1234567891012", "test");
 
-        assertFalse(list.remove(randomBook, fileHandler));
+        assertFalse(list.remove(randomBook, logger));
     }
 }
