@@ -1,8 +1,8 @@
 package com.mahsan.librarymanagementsystem.service;
 
 import com.mahsan.librarymanagementsystem.exception.MissingParametersException;
-import com.mahsan.librarymanagementsystem.factory.LibraryItemFactory;
-import com.mahsan.librarymanagementsystem.io.FileHandler;
+import com.mahsan.librarymanagementsystem.io.CsvDataLoader;
+import com.mahsan.librarymanagementsystem.io.SystemFileLogger;
 import com.mahsan.librarymanagementsystem.model.LibraryManager;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 import com.mahsan.librarymanagementsystem.model.dto.*;
@@ -16,23 +16,21 @@ public class LibraryItemCreator {
 
     private final LibraryManager manager;
     private final Scanner scanner;
-    private final FileHandler fileHandler;
-    private final LibraryItemFactory factory;
+    private final SystemFileLogger logger;
 
-    public LibraryItemCreator(LibraryManager manager, Scanner scanner, FileHandler fileHandler, LibraryItemFactory factory) {
+    public LibraryItemCreator(LibraryManager manager, Scanner scanner, SystemFileLogger logger) {
         this.manager = manager;
         this.scanner = scanner;
-        this.fileHandler = fileHandler;
-        this.factory = factory;
+        this.logger = logger;
     }
 
     public void addItem() {
-        fileHandler.logAction("Prompt", "--- Add New Item ---");
-        fileHandler.logAction("Prompt", "Select item type: (1) Book, (2) Magazine, (3) Thesis, (4) Reference Book");
+        logger.logAction("Prompt", "--- Add New Item ---");
+        logger.logAction("Prompt", "Select item type: (1) Book, (2) Magazine, (3) Thesis, (4) Reference Book");
         System.out.print("Enter choice (1-4): ");
         String type = scanner.nextLine().trim();
 
-        fileHandler.logAction("Prompt", "--- Enter Common Details ---");
+        logger.logAction("Prompt", "--- Enter Common Details ---");
         System.out.print("Title: ");
         String title = scanner.nextLine();
         System.out.print("Author: ");
@@ -48,7 +46,7 @@ public class LibraryItemCreator {
             year = Integer.parseInt(yearString.trim());
             total = Integer.parseInt(totalCopies.trim());
         } catch (NumberFormatException e) {
-            fileHandler.logAction("Error", "Invalid number format for year or total copies. Operation canceled.");
+            logger.logAction("Error", "Invalid number format for year or total copies. Operation canceled.");
             return;
         }
 
@@ -58,10 +56,10 @@ public class LibraryItemCreator {
         try {
             itemType = LibraryItemType.fromValue(Integer.parseInt(type));
         } catch (NumberFormatException e) {
-            fileHandler.logAction("Error", "Invalid item type format. Operation canceled.");
+            logger.logAction("Error", "Invalid item type format. Operation canceled.");
             return;
         } catch (IllegalArgumentException e) {
-            fileHandler.logAction("Error", "Unsupported item type selected. Operation canceled.");
+            logger.logAction("Error", "Unsupported item type selected. Operation canceled.");
             return;
         }
 
@@ -79,25 +77,25 @@ public class LibraryItemCreator {
                 request = createReferenceRequest(title, author, year, total);
                 break;
             default:
-                fileHandler.logAction("Error", "Invalid item type selected. Operation canceled.");
+                logger.logAction("Error", "Invalid item type selected. Operation canceled.");
                 return;
         }
 
         if (request == null) {
-            fileHandler.logAction("Error", "Invalid item details. Operation canceled.");
+            logger.logAction("Error", "Invalid item details. Operation canceled.");
             return;
         }
 
         try {
             String uuid = UUID.randomUUID().toString();
-            LibraryItem item = factory.createItem(request, uuid);
+            LibraryItem item = request.createItem(uuid);
 
             manager.addItem(uuid, item);
-            fileHandler.logAction("Add item",
+            logger.logAction("Add item",
                     "Item " + item.getTitle() + " (" + type + ") added successfully.");
 
         } catch (MissingParametersException | IllegalArgumentException e) {
-            fileHandler.logAction("Error", "Data creation failed for " + type + ": " + e.getMessage());
+            logger.logAction("Error", "Data creation failed for " + type + ": " + e.getMessage());
         }
     }
 
@@ -113,7 +111,7 @@ public class LibraryItemCreator {
             BookState bookState = BookState.fromValue(Integer.parseInt(state.trim()));
             return new BookCreateRequest(title, author, year, total, bookState, isbn, publisher);
         } catch (Exception e) {
-            fileHandler.logAction("Error", "Invalid book details: " + e.getMessage());
+            logger.logAction("Error", "Invalid book details: " + e.getMessage());
             return null;
         }
     }
@@ -131,7 +129,7 @@ public class LibraryItemCreator {
             int issueNumber = Integer.parseInt(issue.trim());
             return new MagazineCreateRequest(title, author, year, total, issn, volumeNumber, issueNumber);
         } catch (Exception e) {
-            fileHandler.logAction("Error", "Invalid magazine details: " + e.getMessage());
+            logger.logAction("Error", "Invalid magazine details: " + e.getMessage());
             return null;
         }
     }
@@ -147,7 +145,7 @@ public class LibraryItemCreator {
         try {
             return new ThesisCreateRequest(title, author, year, total, university, degree, advisor);
         } catch (Exception e) {
-            fileHandler.logAction("Error", "Invalid thesis details: " + e.getMessage());
+            logger.logAction("Error", "Invalid thesis details: " + e.getMessage());
             return null;
         }
     }
@@ -164,14 +162,14 @@ public class LibraryItemCreator {
             int editionNumber = Integer.parseInt(edition.trim());
 
             if (!lendable.trim().equals("true") && !lendable.trim().equals("false")) {
-                fileHandler.logAction("Error", "Invalid lendable details: " + lendable);
+                logger.logAction("Error", "Invalid lendable details: " + lendable);
                 return null;
             }
 
             boolean isLendable = Boolean.parseBoolean(lendable.trim());
             return new ReferenceBookCreateRequest(title, author, year, total, refIsbn, editionNumber, isLendable);
         } catch (Exception e) {
-            fileHandler.logAction("Error", "Invalid reference details: " + e.getMessage());
+            logger.logAction("Error", "Invalid reference details: " + e.getMessage());
             return null;
         }
     }

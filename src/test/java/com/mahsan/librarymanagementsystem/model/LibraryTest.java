@@ -1,27 +1,23 @@
 package com.mahsan.librarymanagementsystem.model;
 
-import com.mahsan.librarymanagementsystem.io.FileHandler;
+import com.mahsan.librarymanagementsystem.io.SystemFileLogger;
 import com.mahsan.librarymanagementsystem.model.enums.BookState;
-import com.mahsan.librarymanagementsystem.exception.BookNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class LibraryTest {
 
     private LibraryManager libraryManager;
-    private FileHandler fileHandler;
+    private SystemFileLogger logger;
     private Book book1;
     private Book book2;
     private Book book3;
 
     @BeforeEach
     void setUp() {
-        fileHandler = new FileHandler();
-        libraryManager = new LibraryManager(fileHandler);
+        logger = new SystemFileLogger();
+        libraryManager = new LibraryManager(logger);
 
         book1 = new Book(UUID.randomUUID().toString(), "Data structure", "Someone", 2020,
                 4, BookState.EXIST, "1234567891012", "test");

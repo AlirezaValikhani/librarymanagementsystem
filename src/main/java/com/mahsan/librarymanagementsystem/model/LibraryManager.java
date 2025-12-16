@@ -1,7 +1,6 @@
 package com.mahsan.librarymanagementsystem.model;
 
 import com.mahsan.librarymanagementsystem.io.Logger;
-import com.mahsan.librarymanagementsystem.model.base.Lendable;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 
 import java.time.LocalDateTime;
@@ -110,11 +109,6 @@ public class LibraryManager<T extends LibraryItem> {
             return false;
         }
 
-        if (!(item instanceof Lendable)) {
-            logger.logAction("Borrow failed", "Item " + item.getTitle() + " is not lendable.");
-            return false;
-        }
-
         if (item instanceof ReferenceBook referenceBook && !referenceBook.isLendable()) {
             logger.logAction("Borrow failed", "Reference book " + item.getTitle() + " is marked as non-lendable.");
             return false;
@@ -137,11 +131,6 @@ public class LibraryManager<T extends LibraryItem> {
 
         if (item == null) {
             logger.logAction("Error", "Item not found!");
-            return false;
-        }
-
-        if (!(item instanceof Lendable)) {
-            logger.logAction("Error", "Item " + item.getTitle() + " is not lendable.");
             return false;
         }
 

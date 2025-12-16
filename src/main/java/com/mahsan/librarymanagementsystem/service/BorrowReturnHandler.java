@@ -1,7 +1,7 @@
 package com.mahsan.librarymanagementsystem.service;
 
 import com.mahsan.librarymanagementsystem.cli.LibraryItemSelector;
-import com.mahsan.librarymanagementsystem.io.FileHandler;
+import com.mahsan.librarymanagementsystem.io.SystemFileLogger;
 import com.mahsan.librarymanagementsystem.model.LibraryManager;
 import com.mahsan.librarymanagementsystem.model.RentRecord;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
@@ -16,43 +16,43 @@ public class BorrowReturnHandler {
 
     private final LibraryManager manager;
     private final Scanner scanner;
-    private final FileHandler fileHandler;
+    private final SystemFileLogger logger;
     private final LibraryItemSelector selector;
 
-    public BorrowReturnHandler(LibraryManager manager, Scanner scanner, FileHandler fileHandler, LibraryItemSelector selector) {
+    public BorrowReturnHandler(LibraryManager manager, Scanner scanner, SystemFileLogger logger, LibraryItemSelector selector) {
         this.manager = manager;
         this.scanner = scanner;
-        this.fileHandler = fileHandler;
+        this.logger = logger;
         this.selector = selector;
     }
 
     public void borrowItem() {
-        fileHandler.logAction("Prompt", "--- Borrow books ---");
+        logger.logAction("Prompt", "--- Borrow books ---");
 
         LibraryItem itemToBorrow = selector.selectItemBySearch(BORROW_OPERATION_NAME);
 
         if (itemToBorrow == null) {
-            fileHandler.logAction("Borrow Canceled", "Item doesn't exists!");
+            logger.logAction("Borrow Canceled", "Item doesn't exists!");
             return;
         }
 
         if (itemToBorrow.getAvailableCopies() <= 0) {
-            fileHandler.logAction("Borrow Failed", "This book hasn't enough copies!");
-            itemToBorrow.getBorrowingStatus(fileHandler);
+            logger.logAction("Borrow Failed", "This book hasn't enough copies!");
+            itemToBorrow.getBorrowingStatus(logger);
             return;
         }
 
         if (!manager.borrowItem(itemToBorrow.getUUID()))
-            fileHandler.logAction("Borrow Failed", "Borrow Failed!");
+            logger.logAction("Borrow Failed", "Borrow Failed!");
     }
 
     public void returnItem() {
-        fileHandler.logAction("Prompt", "--- Return book ---");
+        logger.logAction("Prompt", "--- Return book ---");
 
         LibraryItem itemToReturn = selector.selectItemBySearch(RETURN_OPERATION_NAME);
 
         if (itemToReturn == null) {
-            fileHandler.logAction("Return Canceled", "There is no item returned.");
+            logger.logAction("Return Canceled", "There is no item returned.");
             return;
         }
 
@@ -61,19 +61,19 @@ public class BorrowReturnHandler {
                 .toList();
 
         if (activeRecords.isEmpty()) {
-            fileHandler.logAction("Return Failed", itemToReturn.getTitle() + " There is no active rent record.");
+            logger.logAction("Return Failed", itemToReturn.getTitle() + " There is no active rent record.");
             return;
         }
 
-        fileHandler.logAction("Selection Required", "Choose active records for: " + itemToReturn.getTitle());
+        logger.logAction("Selection Required", "Choose active records for: " + itemToReturn.getTitle());
         for (int i = 0; i < activeRecords.size(); i++) {
             RentRecord record = activeRecords.get(i);
-            fileHandler.logAction("Active Record",
+            logger.logAction("Active Record",
                     String.format("[%d] Record ID: %d | Borrow Date: %s",
                             i + 1, record.getRecordId(), record.getBorrowDate()));
         }
 
-        fileHandler.logAction("Prompt", "Enter the Record ID for return (or 0 to cancel):");
+        logger.logAction("Prompt", "Enter the Record ID for return (or 0 to cancel):");
         String recordIdString = scanner.nextLine().trim();
         int recordId;
 
@@ -85,11 +85,11 @@ public class BorrowReturnHandler {
                 recordId = activeRecords.get(recordId - 1).getRecordId();
 
         } catch (NumberFormatException e) {
-            fileHandler.logAction("Return failed", "Wrong record ID format! Return cancelled.");
+            logger.logAction("Return failed", "Wrong record ID format! Return cancelled.");
             return;
         }
 
         if (!manager.returnItem(itemToReturn.getUUID(), recordId))
-            fileHandler.logAction("Return Failed", "Error while recording the return or the Record ID was not found.");
+            logger.logAction("Return Failed", "Error while recording the return or the Record ID was not found.");
     }
 }

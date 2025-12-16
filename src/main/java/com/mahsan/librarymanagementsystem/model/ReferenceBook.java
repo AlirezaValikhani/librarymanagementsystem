@@ -1,10 +1,9 @@
 package com.mahsan.librarymanagementsystem.model;
 
 import com.mahsan.librarymanagementsystem.io.Logger;
-import com.mahsan.librarymanagementsystem.model.base.Lendable;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 
-public class ReferenceBook extends LibraryItem implements Lendable {
+public class ReferenceBook extends LibraryItem {
 
     private String ISBN;
     private int editionNumber;

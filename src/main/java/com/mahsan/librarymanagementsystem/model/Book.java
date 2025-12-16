@@ -1,11 +1,10 @@
 package com.mahsan.librarymanagementsystem.model;
 
 import com.mahsan.librarymanagementsystem.io.Logger;
-import com.mahsan.librarymanagementsystem.model.base.Lendable;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 import com.mahsan.librarymanagementsystem.model.enums.BookState;
 
-public class Book extends LibraryItem implements Lendable {
+public class Book extends LibraryItem {
 
     private BookState state;
     private String ISBN;

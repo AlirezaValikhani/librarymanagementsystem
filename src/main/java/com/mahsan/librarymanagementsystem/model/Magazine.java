@@ -1,10 +1,9 @@
 package com.mahsan.librarymanagementsystem.model;
 
 import com.mahsan.librarymanagementsystem.io.Logger;
-import com.mahsan.librarymanagementsystem.model.base.Lendable;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 
-public class Magazine extends LibraryItem implements Lendable {
+public class Magazine extends LibraryItem {
 
     private String ISSN;
     private int volumeNumber;

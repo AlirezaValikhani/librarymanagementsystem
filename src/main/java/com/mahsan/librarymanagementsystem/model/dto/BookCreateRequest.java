@@ -1,5 +1,7 @@
 package com.mahsan.librarymanagementsystem.model.dto;
 
+import com.mahsan.librarymanagementsystem.model.Book;
+import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 import com.mahsan.librarymanagementsystem.model.enums.BookState;
 import com.mahsan.librarymanagementsystem.model.enums.LibraryItemType;
 
@@ -26,5 +28,18 @@ public class BookCreateRequest extends LibraryItemCreateRequest {
 
     public String getPublisher() {
         return publisher;
+    }
+
+
+    @Override
+    public LibraryItem createItem(String uuid) {
+        return new Book(uuid,
+                this.getTitle(),
+                this.getAuthor(),
+                this.getYearOfPublication(),
+                this.getTotalCopies(),
+                this.getState(),
+                this.getIsbn(),
+                this.getPublisher());
     }
 }

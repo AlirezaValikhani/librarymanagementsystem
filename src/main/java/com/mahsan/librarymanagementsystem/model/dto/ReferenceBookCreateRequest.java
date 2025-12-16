@@ -1,5 +1,7 @@
 package com.mahsan.librarymanagementsystem.model.dto;
 
+import com.mahsan.librarymanagementsystem.model.ReferenceBook;
+import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 import com.mahsan.librarymanagementsystem.model.enums.LibraryItemType;
 
 public class ReferenceBookCreateRequest extends LibraryItemCreateRequest {
@@ -26,4 +28,16 @@ public class ReferenceBookCreateRequest extends LibraryItemCreateRequest {
     public boolean isLendable() {
         return lendable;
     }
+
+    @Override
+    public LibraryItem createItem(String uuid) {
+        ReferenceBook refBook = new ReferenceBook(uuid,
+                this.getTitle(),
+                this.getAuthor(),
+                this.getYearOfPublication(),
+                this.getTotalCopies(),
+                this.getIsbn(),
+                this.getEditionNumber());
+        refBook.setLendable(this.isLendable());
+        return refBook;    }
 }

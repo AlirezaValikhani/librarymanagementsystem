@@ -1,5 +1,6 @@
 package com.mahsan.librarymanagementsystem.model.dto;
 
+import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 import com.mahsan.librarymanagementsystem.model.enums.LibraryItemType;
 
 public abstract class LibraryItemCreateRequest {
@@ -36,4 +37,6 @@ public abstract class LibraryItemCreateRequest {
     public int getTotalCopies() {
         return totalCopies;
     }
+
+    public abstract LibraryItem createItem(String uuid);
 }

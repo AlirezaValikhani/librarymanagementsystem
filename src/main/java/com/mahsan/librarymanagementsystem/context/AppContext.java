@@ -1,42 +1,42 @@
 package com.mahsan.librarymanagementsystem.context;
 
-import com.mahsan.librarymanagementsystem.factory.LibraryItemFactory;
-import com.mahsan.librarymanagementsystem.io.FileHandler;
+import com.mahsan.librarymanagementsystem.io.CsvDataLoader;
+import com.mahsan.librarymanagementsystem.io.SystemFileLogger;
 import com.mahsan.librarymanagementsystem.model.LibraryManager;
 
 import java.util.Scanner;
 
 public class AppContext {
-    private final FileHandler fileHandler;
+    private final SystemFileLogger logger;
+    private final CsvDataLoader csvDataLoader;
     private final LibraryManager manager;
-    private final LibraryItemFactory factory;
     private final Scanner scanner;
 
-    public AppContext(FileHandler fileHandler, LibraryManager manager, LibraryItemFactory factory, Scanner scanner) {
-        this.fileHandler = fileHandler;
+    public AppContext(SystemFileLogger logger, CsvDataLoader csvDataLoader, LibraryManager manager, Scanner scanner) {
+        this.logger = logger;
+        this.csvDataLoader = csvDataLoader;
         this.manager = manager;
-        this.factory = factory;
         this.scanner = scanner;
     }
 
     public static AppContext defaultContext() {
-        FileHandler fileHandler = new FileHandler();
-        LibraryManager manager = new LibraryManager(fileHandler);
-        LibraryItemFactory factory = new LibraryItemFactory();
+        SystemFileLogger logger = new SystemFileLogger();
+        CsvDataLoader csvDataLoader = new CsvDataLoader(logger);
+        LibraryManager manager = new LibraryManager(logger);
         Scanner scanner = new Scanner(System.in);
-        return new AppContext(fileHandler, manager, factory, scanner);
+        return new AppContext(logger, csvDataLoader, manager, scanner);
     }
 
-    public FileHandler getFileHandler() {
-        return fileHandler;
+    public CsvDataLoader getCsvDataLoader() {
+        return csvDataLoader;
+    }
+
+    public SystemFileLogger getLogger() {
+        return logger;
     }
 
     public LibraryManager getManager() {
         return manager;
-    }
-
-    public LibraryItemFactory getFactory() {
-        return factory;
     }
 
     public Scanner getScanner() {

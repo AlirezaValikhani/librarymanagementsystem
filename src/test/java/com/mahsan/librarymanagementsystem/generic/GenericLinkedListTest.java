@@ -2,8 +2,8 @@ package com.mahsan.librarymanagementsystem.generic;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.mahsan.librarymanagementsystem.io.FileHandler;
 import com.mahsan.librarymanagementsystem.io.Logger;
+import com.mahsan.librarymanagementsystem.io.SystemFileLogger;
 import com.mahsan.librarymanagementsystem.model.Magazine;
 import com.mahsan.librarymanagementsystem.model.ReferenceBook;
 import com.mahsan.librarymanagementsystem.model.Thesis;
@@ -24,7 +24,7 @@ class GenericLinkedListTest {
     @BeforeEach
     void setUp() {
         list = new GenericLinkedList<>();
-        logger = new FileHandler();
+        logger = new SystemFileLogger();
     }
 
     @Test

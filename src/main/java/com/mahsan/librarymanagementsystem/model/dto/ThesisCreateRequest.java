@@ -1,5 +1,7 @@
 package com.mahsan.librarymanagementsystem.model.dto;
 
+import com.mahsan.librarymanagementsystem.model.Thesis;
+import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 import com.mahsan.librarymanagementsystem.model.enums.LibraryItemType;
 
 public class ThesisCreateRequest extends LibraryItemCreateRequest {
@@ -25,5 +27,17 @@ public class ThesisCreateRequest extends LibraryItemCreateRequest {
 
     public String getAdvisorName() {
         return advisorName;
+    }
+
+    @Override
+    public LibraryItem createItem(String uuid) {
+        return new Thesis(uuid,
+                this.getTitle(),
+                this.getAuthor(),
+                this.getYearOfPublication(),
+                this.getTotalCopies(),
+                this.getUniversityName(),
+                this.getDegreeLevel(),
+                this.getAdvisorName());
     }
 }

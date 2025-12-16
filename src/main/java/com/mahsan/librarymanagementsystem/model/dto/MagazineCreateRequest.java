@@ -1,5 +1,7 @@
 package com.mahsan.librarymanagementsystem.model.dto;
 
+import com.mahsan.librarymanagementsystem.model.Magazine;
+import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 import com.mahsan.librarymanagementsystem.model.enums.LibraryItemType;
 
 public class MagazineCreateRequest extends LibraryItemCreateRequest {
@@ -25,5 +27,17 @@ public class MagazineCreateRequest extends LibraryItemCreateRequest {
 
     public int getIssueNumber() {
         return issueNumber;
+    }
+
+    @Override
+    public LibraryItem createItem(String uuid) {
+        return new Magazine(uuid,
+                this.getTitle(),
+                this.getAuthor(),
+                this.getYearOfPublication(),
+                this.getTotalCopies(),
+                this.getIssn(),
+                this.getVolumeNumber(),
+                this.getIssueNumber());
     }
 }

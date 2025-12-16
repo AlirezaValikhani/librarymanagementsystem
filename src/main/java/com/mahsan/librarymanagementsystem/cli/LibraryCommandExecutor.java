@@ -1,7 +1,8 @@
 package com.mahsan.librarymanagementsystem.cli;
 
 import com.mahsan.librarymanagementsystem.context.AppContext;
-import com.mahsan.librarymanagementsystem.io.FileHandler;
+import com.mahsan.librarymanagementsystem.io.CsvDataLoader;
+import com.mahsan.librarymanagementsystem.io.SystemFileLogger;
 import com.mahsan.librarymanagementsystem.model.LibraryManager;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 import com.mahsan.librarymanagementsystem.service.BorrowReturnHandler;
@@ -17,7 +18,8 @@ public class LibraryCommandExecutor {
 
     private final LibraryManager manager;
     private final Scanner scanner;
-    private final FileHandler fileHandler;
+    private final CsvDataLoader csvDataLoader;
+    private final SystemFileLogger logger;
     private final LibraryItemSelector selector;
     private final LibraryItemCreator creator;
     private final LibraryItemUpdater updater;
@@ -26,15 +28,16 @@ public class LibraryCommandExecutor {
     public LibraryCommandExecutor(AppContext context) {
         this.manager = context.getManager();
         this.scanner = context.getScanner();
-        this.fileHandler = context.getFileHandler();
-        this.selector = new LibraryItemSelector(manager, scanner, fileHandler);
-        this.creator = new LibraryItemCreator(manager, scanner, fileHandler, context.getFactory());
-        this.updater = new LibraryItemUpdater(manager, scanner, fileHandler, selector);
-        this.borrowReturnHandler = new BorrowReturnHandler(manager, scanner, fileHandler, selector);
+        this.csvDataLoader = context.getCsvDataLoader();
+        this.logger = context.getLogger();
+        this.selector = new LibraryItemSelector(manager, scanner, logger);
+        this.creator = new LibraryItemCreator(manager, scanner, logger);
+        this.updater = new LibraryItemUpdater(manager, scanner, logger, selector);
+        this.borrowReturnHandler = new BorrowReturnHandler(manager, scanner, logger, selector);
     }
 
     public void loadInitialData() {
-        fileHandler.loadBooksFromFile(manager);
+        csvDataLoader.loadBooksFromFile(manager);
     }
 
     public String readInput() {
@@ -42,11 +45,11 @@ public class LibraryCommandExecutor {
     }
 
     public void logExit() {
-        fileHandler.logAction("Exit", "User exited.");
+        logger.logAction("Exit", "User exited.");
     }
 
     public void logInvalidInput() {
-        fileHandler.logAction("CLI wrong input", "Invalid input. Choose a number between 1 and 5.");
+        logger.logAction("CLI wrong input", "Invalid input. Choose a number between 1 and 5.");
     }
 
     public void close() {
@@ -75,7 +78,7 @@ public class LibraryCommandExecutor {
     }
 
     public void search() {
-        fileHandler.logAction("Searching", "Enter anything to search in library: ");
+        logger.logAction("Searching", "Enter anything to search in library: ");
         String query = scanner.nextLine();
 
         manager.search(query);
@@ -84,9 +87,9 @@ public class LibraryCommandExecutor {
     public void sortedList() {
         List<LibraryItem> sortedItems = manager.getSortedItems();
         for (LibraryItem libraryItem : sortedItems)
-            libraryItem.display(fileHandler);
+            libraryItem.display(logger);
 
-        fileHandler.logAction("Sorted list", "Sorted list successfully called.");
+        logger.logAction("Sorted list", "Sorted list successfully called.");
     }
 
     public void borrowItem() {
