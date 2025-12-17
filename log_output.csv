@@ -1,0 +1,58 @@
+[2025-12-16 11:43:30] Operation : Add item | Result : Think again (BOOK) added to library successfully
+[2025-12-16 11:43:30] Operation : Error | Result : Invalid line format: book,b,3
+[2025-12-16 11:43:30] Operation : Add item | Result : Data structure (MAGAZINE) added to library successfully
+[2025-12-16 11:43:30] Operation : Add item | Result : On the meaning of life (REFERENCE) added to library successfully
+[2025-12-16 11:43:30] Operation : Add item | Result : Some book (THESIS) added to library successfully
+[2025-12-16 11:43:30] Operation : Error in create item | Result : Invalid parameters: No enum constant com.mahsan.librarymanagementsystem.model.enums.LibraryItemType.NOTHING
+[2025-12-16 11:44:09] Operation : Display | Result : --- Thesis Details ---
+[2025-12-16 11:44:09] Operation : Display | Result : Title: Some book
+[2025-12-16 11:44:09] Operation : Display | Result : Author: author name
+[2025-12-16 11:44:09] Operation : Display | Result : Year of Publication: 2005
+[2025-12-16 11:44:09] Operation : Display | Result : Total copies: 1
+[2025-12-16 11:44:09] Operation : Display | Result : University: Tallin
+[2025-12-16 11:44:09] Operation : Display | Result : Degree Level: bachelor
+[2025-12-16 11:44:09] Operation : Display | Result : Advisor: test
+[2025-12-16 11:44:09] Operation : Display | Result : --- Book Details ---
+[2025-12-16 11:44:09] Operation : Display | Result : Title: Think again
+[2025-12-16 11:44:09] Operation : Display | Result : Author: Walter
+[2025-12-16 11:44:09] Operation : Display | Result : Year of Publication: 1990
+[2025-12-16 11:44:09] Operation : Display | Result : Total copies: 1
+[2025-12-16 11:44:09] Operation : Display | Result : State: EXIST
+[2025-12-16 11:44:09] Operation : Display | Result : ISBN: 1234567891012
+[2025-12-16 11:44:09] Operation : Display | Result : Publisher: Ali
+[2025-12-16 11:44:09] Operation : Display | Result : --- Magazine Details ---
+[2025-12-16 11:44:09] Operation : Display | Result : Title: Data structure
+[2025-12-16 11:44:09] Operation : Display | Result : Author: someone
+[2025-12-16 11:44:09] Operation : Display | Result : Year of Publication: 2000
+[2025-12-16 11:44:09] Operation : Display | Result : Total copies: 3
+[2025-12-16 11:44:09] Operation : Display | Result : Volume Number: 3
+[2025-12-16 11:44:09] Operation : Display | Result : Issue Number: 4
+[2025-12-16 11:44:09] Operation : Display | Result : --- Reference Book Details ---
+[2025-12-16 11:44:09] Operation : Display | Result : Title: On the meaning of life
+[2025-12-16 11:44:09] Operation : Display | Result : Author: Will Dorant
+[2025-12-16 11:44:09] Operation : Display | Result : Year of Publication: 1950
+[2025-12-16 11:44:09] Operation : Display | Result : Total copies: 7
+[2025-12-16 11:44:09] Operation : Display | Result : Edition: 3281
+[2025-12-16 11:44:09] Operation : Display | Result : Is Lendable: Yes
+[2025-12-16 11:44:09] Operation : Display library items operation | Result : Items displayed.
+[2025-12-16 15:55:50] Operation : Add item | Result : Think again (BOOK) added to library successfully
+[2025-12-16 15:55:50] Operation : Error | Result : Invalid line format: book,b,3
+[2025-12-16 15:55:50] Operation : Add item | Result : Data structure (MAGAZINE) added to library successfully
+[2025-12-16 15:55:50] Operation : Add item | Result : On the meaning of life (REFERENCE) added to library successfully
+[2025-12-16 15:55:50] Operation : Add item | Result : Some book (THESIS) added to library successfully
+[2025-12-16 15:55:50] Operation : Error in create item | Result : Invalid parameters: No enum constant com.mahsan.librarymanagementsystem.model.enums.LibraryItemType.NOTHING
+[2025-12-16 15:56:42] Operation : Add item | Result : Think again (BOOK) added to library successfully
+[2025-12-16 15:56:42] Operation : Error | Result : Invalid line format: book,b,3
+[2025-12-16 15:56:42] Operation : Error | Result : Invalid parameters: Index 7 out of bounds for length 7
+[2025-12-16 15:56:42] Operation : Error in create item | Result : Skipping line due to invalid data: MAGAZINE,Data structure,someone,2000,3,1110987654321,3,4
+[2025-12-16 15:56:42] Operation : Add item | Result : On the meaning of life (REFERENCE) added to library successfully
+[2025-12-16 15:56:42] Operation : Add item | Result : Some book (THESIS) added to library successfully
+[2025-12-16 15:56:42] Operation : Error in create item | Result : Invalid parameters: No enum constant com.mahsan.librarymanagementsystem.model.enums.LibraryItemType.NOTHING
+[2025-12-16 15:56:51] Operation : Prompt | Result : --- Add New Item ---
+[2025-12-16 15:56:51] Operation : Prompt | Result : Select item type: (1) Book, (2) Magazine, (3) Thesis, (4) Reference Book
+[2025-12-16 15:56:53] Operation : Prompt | Result : --- Enter Common Details ---
+[2025-12-16 15:56:57] Operation : Error | Result : Invalid number format for year or total copies. Operation canceled.
+[2025-12-16 15:57:02] Operation : Prompt | Result : --- Add New Item ---
+[2025-12-16 15:57:02] Operation : Prompt | Result : Select item type: (1) Book, (2) Magazine, (3) Thesis, (4) Reference Book
+[2025-12-16 15:57:05] Operation : Prompt | Result : --- Enter Common Details ---
+[2025-12-16 15:57:15] Operation : Add item | Result : Item s (1) added successfully.
