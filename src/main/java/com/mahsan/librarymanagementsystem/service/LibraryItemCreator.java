@@ -1,8 +1,9 @@
 package com.mahsan.librarymanagementsystem.service;
 
+import com.mahsan.librarymanagementsystem.cli.ConsoleInput;
 import com.mahsan.librarymanagementsystem.exception.MissingParametersException;
-import com.mahsan.librarymanagementsystem.io.CsvDataLoader;
 import com.mahsan.librarymanagementsystem.io.SystemFileLogger;
+import com.mahsan.librarymanagementsystem.model.CommonDetails;
 import com.mahsan.librarymanagementsystem.model.LibraryManager;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 import com.mahsan.librarymanagementsystem.model.dto.*;
@@ -15,71 +16,28 @@ import java.util.UUID;
 public class LibraryItemCreator {
 
     private final LibraryManager manager;
-    private final Scanner scanner;
     private final SystemFileLogger logger;
+    private final ConsoleInput input;
 
     public LibraryItemCreator(LibraryManager manager, Scanner scanner, SystemFileLogger logger) {
         this.manager = manager;
-        this.scanner = scanner;
         this.logger = logger;
+        this.input = new ConsoleInput(scanner, logger);
     }
 
     public void addItem() {
-        logger.logAction("Prompt", "--- Add New Item ---");
-        logger.logAction("Prompt", "Select item type: (1) Book, (2) Magazine, (3) Thesis, (4) Reference Book");
-        System.out.print("Enter choice (1-4): ");
-        String type = scanner.nextLine().trim();
+        logFirstPrompts();
+        LibraryItemType itemType = promptItemType();
+        CommonDetails commonDetails = promptCommonDetails();
 
-        logger.logAction("Prompt", "--- Enter Common Details ---");
-        System.out.print("Title: ");
-        String title = scanner.nextLine();
-        System.out.print("Author: ");
-        String author = scanner.nextLine();
-        System.out.print("Year of Publication: ");
-        String yearString = scanner.nextLine();
-        System.out.print("Total copies: ");
-        String totalCopies = scanner.nextLine();
-
-        int year;
-        int total;
-        try {
-            year = Integer.parseInt(yearString.trim());
-            total = Integer.parseInt(totalCopies.trim());
-        } catch (NumberFormatException e) {
-            logger.logAction("Error", "Invalid number format for year or total copies. Operation canceled.");
+        if (itemType == null)
             return;
-        }
 
-        LibraryItemCreateRequest request;
-        LibraryItemType itemType;
 
-        try {
-            itemType = LibraryItemType.fromValue(Integer.parseInt(type));
-        } catch (NumberFormatException e) {
-            logger.logAction("Error", "Invalid item type format. Operation canceled.");
+        if (commonDetails == null)
             return;
-        } catch (IllegalArgumentException e) {
-            logger.logAction("Error", "Unsupported item type selected. Operation canceled.");
-            return;
-        }
 
-        switch (itemType) {
-            case LibraryItemType.BOOK:
-                request = createBookRequest(title, author, year, total);
-                break;
-            case LibraryItemType.MAGAZINE:
-                request = createMagazineRequest(title, author, year, total);
-                break;
-            case LibraryItemType.THESIS:
-                request = createThesisRequest(title, author, year, total);
-                break;
-            case LibraryItemType.REFERENCE:
-                request = createReferenceRequest(title, author, year, total);
-                break;
-            default:
-                logger.logAction("Error", "Invalid item type selected. Operation canceled.");
-                return;
-        }
+        LibraryItemCreateRequest request = routeTypeToMakeRequest(itemType, commonDetails);
 
         if (request == null) {
             logger.logAction("Error", "Invalid item details. Operation canceled.");
@@ -92,82 +50,122 @@ public class LibraryItemCreator {
 
             manager.addItem(uuid, item);
             logger.logAction("Add item",
-                    "Item " + item.getTitle() + " (" + type + ") added successfully.");
+                    "Item " + item.getTitle() + " (" + itemType + ") added successfully.");
 
         } catch (MissingParametersException | IllegalArgumentException e) {
-            logger.logAction("Error", "Data creation failed for " + type + ": " + e.getMessage());
+            logger.logAction("Error", "Data creation failed for " + itemType + ": " + e.getMessage());
         }
     }
 
-    private BookCreateRequest createBookRequest(String title, String author, int year, int total) {
-        System.out.print("ISBN: ");
-        String isbn = scanner.nextLine();
-        System.out.print("Publisher: ");
-        String publisher = scanner.nextLine();
-        System.out.print("State (1=EXIST, 2=LOANED, 3=BANNED): ");
-        String state = scanner.nextLine();
+    private void logFirstPrompts() {
+        logger.logAction("Prompt", "--- Add New Item ---");
+        logger.logAction("Prompt", "Select item type: (1) Book, (2) Magazine, (3) Thesis, (4) Reference Book");
+    }
+
+    private LibraryItemCreateRequest routeTypeToMakeRequest(LibraryItemType itemType,
+                                                            CommonDetails commonDetails) {
+        return switch (itemType) {
+            case BOOK -> createBookRequest(commonDetails);
+            case MAGAZINE -> createMagazineRequest(commonDetails);
+            case THESIS -> createThesisRequest(commonDetails);
+            case REFERENCE -> createReferenceRequest(commonDetails);
+            default -> {
+                logger.logAction("Error", "Invalid item type selected. Operation canceled.");
+                throw new IllegalArgumentException("Unsupported item type: " + itemType);
+            }
+        };
+    }
+
+    private LibraryItemType promptItemType() {
+        Integer value = input.readInt("Enter choice (1-4): ", "Invalid item type format. Operation canceled.");
+
+        if (value == null)
+            return null;
 
         try {
-            BookState bookState = BookState.fromValue(Integer.parseInt(state.trim()));
-            return new BookCreateRequest(title, author, year, total, bookState, isbn, publisher);
+            return LibraryItemType.fromValue(value);
+        } catch (IllegalArgumentException e) {
+            logger.logAction("Error", "Unsupported item type selected. Operation canceled.");
+            return null;
+        }
+    }
+
+    private CommonDetails promptCommonDetails() {
+        logger.logAction("Prompt", "--- Enter Common Details ---");
+        String title = input.readLine("Title: ");
+        String author = input.readLine("Author: ");
+
+        Integer year = input.readInt("Year of Publication: ", "Invalid number format for year. Operation canceled.");
+        if (year == null)
+            return null;
+
+        Integer totalCopies = input.readInt("Total copies: ", "Invalid number format for total copies. Operation canceled.");
+        if (totalCopies == null)
+            return null;
+
+        return new CommonDetails(title, author, year, totalCopies);
+    }
+
+    private BookCreateRequest createBookRequest(CommonDetails common) {
+        String isbn = input.readLine("ISBN: ");
+        String publisher = input.readLine("Publisher: ");
+        Integer state = input.readInt("State (1=EXIST, 2=LOANED, 3=BANNED): ", "Invalid book state. Operation canceled.");
+
+        if (state == null)
+            return null;
+
+        try {
+            BookState bookState = BookState.fromValue(state);
+            return new BookCreateRequest(common.getTitle(), common.getAuthor(), common.getYear(), common.getTotalCopies(), bookState, isbn, publisher);
         } catch (Exception e) {
             logger.logAction("Error", "Invalid book details: " + e.getMessage());
             return null;
         }
     }
 
-    private MagazineCreateRequest createMagazineRequest(String title, String author, int year, int total) {
-        System.out.print("ISSN: ");
-        String issn = scanner.nextLine();
-        System.out.print("Volume Number: ");
-        String volume = scanner.nextLine();
-        System.out.print("Issue Number: ");
-        String issue = scanner.nextLine();
+    private MagazineCreateRequest createMagazineRequest(CommonDetails common) {
+        String issn = input.readLine("ISSN: ");
+        Integer volumeNumber = input.readInt("Volume Number: ", "Invalid magazine volume number. Operation canceled.");
+        if (volumeNumber == null)
+            return null;
+        Integer issueNumber = input.readInt("Issue Number: ", "Invalid magazine issue number. Operation canceled.");
+        if (issueNumber == null)
+            return null;
 
         try {
-            int volumeNumber = Integer.parseInt(volume.trim());
-            int issueNumber = Integer.parseInt(issue.trim());
-            return new MagazineCreateRequest(title, author, year, total, issn, volumeNumber, issueNumber);
+            return new MagazineCreateRequest(common.getTitle(), common.getAuthor(), common.getYear(), common.getTotalCopies(), issn, volumeNumber, issueNumber);
         } catch (Exception e) {
             logger.logAction("Error", "Invalid magazine details: " + e.getMessage());
             return null;
         }
     }
 
-    private ThesisCreateRequest createThesisRequest(String title, String author, int year, int total) {
-        System.out.print("University Name: ");
-        String university = scanner.nextLine();
-        System.out.print("Degree Level: ");
-        String degree = scanner.nextLine();
-        System.out.print("Advisor Name: ");
-        String advisor = scanner.nextLine();
+    private ThesisCreateRequest createThesisRequest(CommonDetails common) {
+        String university = input.readLine("University Name: ");
+        String degree = input.readLine("Degree Level: ");
+        String advisor = input.readLine("Advisor Name: ");
 
         try {
-            return new ThesisCreateRequest(title, author, year, total, university, degree, advisor);
+            return new ThesisCreateRequest(common.getTitle(), common.getAuthor(), common.getYear(), common.getTotalCopies(), university, degree, advisor);
         } catch (Exception e) {
             logger.logAction("Error", "Invalid thesis details: " + e.getMessage());
             return null;
         }
     }
 
-    private ReferenceBookCreateRequest createReferenceRequest(String title, String author, int year, int total) {
-        System.out.print("ISBN: ");
-        String refIsbn = scanner.nextLine();
-        System.out.print("Edition Number: ");
-        String edition = scanner.nextLine();
-        System.out.print("Is Lendable (true/false): ");
-        String lendable = scanner.nextLine();
+    private ReferenceBookCreateRequest createReferenceRequest(CommonDetails common) {
+        String refIsbn = input.readLine("ISBN: ");
+        Integer editionNumber = input.readInt("Edition Number: ", "Invalid edition number. Operation canceled.");
+        if (editionNumber == null)
+            return null;
+
+        Boolean isLendable = input.readBooleanStrict("Is Lendable (true/false): ", "Invalid lendable value (expected true/false). Operation canceled.");
+        if (isLendable == null)
+            return null;
 
         try {
-            int editionNumber = Integer.parseInt(edition.trim());
-
-            if (!lendable.trim().equals("true") && !lendable.trim().equals("false")) {
-                logger.logAction("Error", "Invalid lendable details: " + lendable);
-                return null;
-            }
-
-            boolean isLendable = Boolean.parseBoolean(lendable.trim());
-            return new ReferenceBookCreateRequest(title, author, year, total, refIsbn, editionNumber, isLendable);
+            return new ReferenceBookCreateRequest(common.getTitle(), common.getAuthor(), common.getYear(),
+                    common.getTotalCopies(), refIsbn, editionNumber, isLendable);
         } catch (Exception e) {
             logger.logAction("Error", "Invalid reference details: " + e.getMessage());
             return null;

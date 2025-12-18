@@ -1,7 +1,6 @@
 package com.mahsan.librarymanagementsystem.service;
 
 import com.mahsan.librarymanagementsystem.cli.LibraryItemSelector;
-import com.mahsan.librarymanagementsystem.io.CsvDataLoader;
 import com.mahsan.librarymanagementsystem.io.SystemFileLogger;
 import com.mahsan.librarymanagementsystem.model.*;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
@@ -33,161 +32,175 @@ public class LibraryItemUpdater {
             return;
         }
 
-        logger.logAction("Prompt", "--- Updating Item: " + itemToUpdate.getTitle() + " (" + itemToUpdate.getClass().getSimpleName() + ") ---");
-
-        logger.logAction("Prompt","Current Title: " + itemToUpdate.getTitle() + " | Enter new Title:");
-        String newTitle = scanner.nextLine().trim();
-        logger.logAction("Prompt","Current Author: " + itemToUpdate.getAuthor() + " | Enter new Author:");
-        String newAuthor = scanner.nextLine().trim();
-        int yearOfPublication = getYearOfPublication(itemToUpdate);
-
-        if (yearOfPublication <= 0) {
-            logger.logAction("Error", "Invalid year of publication!");
-            return;
-        }
-
         try {
-            if (itemToUpdate instanceof Book)
-                updateBookSpecifics((Book) itemToUpdate, newTitle, newAuthor, yearOfPublication);
-            else if (itemToUpdate instanceof Magazine)
-                updateMagazineSpecifics((Magazine) itemToUpdate, newTitle, newAuthor, yearOfPublication);
-            else if (itemToUpdate instanceof Thesis)
-                updateThesisSpecifics((Thesis) itemToUpdate, newTitle, newAuthor, yearOfPublication);
-            else if (itemToUpdate instanceof ReferenceBook)
-                updateReferenceSpecifics((ReferenceBook) itemToUpdate, newTitle, newAuthor, yearOfPublication);
-        } catch (NumberFormatException e) {
-            logger.logAction("Error", e.getMessage());
+            CommonDetails details = getCommonDetails(itemToUpdate);
+
+            if (details.getYear() == 0) {
+                logger.logAction("Update canceled", "Invalid year of publication.");
+                return;
+            }
+
+            setCommonDetails(itemToUpdate, details);
+            updateTypeSpecific(itemToUpdate);
+            manager.addItem(itemToUpdate.getUUID(), itemToUpdate);
+            logger.logAction("Success", "Item successfully updated: " + itemToUpdate.getTitle());
+        } catch (IllegalArgumentException e) {
+            logger.logAction("Update canceled", e.getMessage());
         }
     }
 
-    private int getYearOfPublication(LibraryItem itemToUpdate) {
-        logger.logAction("Input", "Current Year: " + itemToUpdate.getYearOfPublication() + " | Enter new Year:");
-        String yearOfPublicationString = scanner.nextLine().trim();
+    private void updateTypeSpecific(LibraryItem itemToUpdate) {
+        if (itemToUpdate instanceof Book)
+            updateBookSpecifics((Book) itemToUpdate);
+        else if (itemToUpdate instanceof Magazine)
+            updateMagazineSpecifics((Magazine) itemToUpdate);
+        else if (itemToUpdate instanceof Thesis)
+            updateThesisSpecifics((Thesis) itemToUpdate);
+        else if (itemToUpdate instanceof ReferenceBook)
+            updateReferenceSpecifics((ReferenceBook) itemToUpdate);
+    }
+
+    private void setCommonDetails(LibraryItem itemToUpdate, CommonDetails details) {
+        itemToUpdate.setTitle(details.getTitle());
+        itemToUpdate.setAuthor(details.getAuthor());
+        itemToUpdate.setYearOfPublication(details.getYear());
+    }
+
+    private CommonDetails getCommonDetails(LibraryItem  itemToUpdate) {
+        logger.logAction("Prompt", "--- Updating Item: " + itemToUpdate.getTitle() + " (" + itemToUpdate.getClass().getSimpleName() + ") ---");
+        String newTitle = readUpdatedText("Title", itemToUpdate.getTitle());
+        String newAuthor = readUpdatedText("Author", itemToUpdate.getAuthor());
+        int year = readUpdatedYear(itemToUpdate);
+        int totalCopies = readUpdatedTotalCopies(itemToUpdate);
+
+        return new CommonDetails(newTitle, newAuthor, year, totalCopies);
+    }
+
+    private String readUpdatedText(String fieldName, String currentValue) {
+        logger.logAction("Prompt", "Current " + fieldName + ": " + currentValue + " | Enter new value (Leave empty to keep):");
+        String input = scanner.nextLine().trim();
+        return input.isEmpty() ? currentValue : input;
+    }
+
+    private int readUpdatedYear(LibraryItem itemToUpdate) {
+        logger.logAction("Prompt", "Current Year: " + itemToUpdate.getYearOfPublication() + " | Enter new Year (Leave empty to keep):");
+        String input = scanner.nextLine().trim();
+        if (input.isEmpty())
+            return itemToUpdate.getYearOfPublication();
 
         try {
-            return Integer.parseInt(yearOfPublicationString);
+            int year = Integer.parseInt(input);
+            return year > 0 ? year : null;
         } catch (NumberFormatException e) {
             return 0;
         }
     }
 
-    private void updateBookSpecifics(Book book, String newTitle, String newAuthor,
-                                     int yearOfPublication) {
-        logger.logAction("Update ISBN", "Current ISBN: " + book.getISBN() + " | Enter new ISBN (Leave empty to skip):");
-        String newIsbn = scanner.nextLine().trim();
-        logger.logAction("Update publisher", "Current Publisher: " + book.getPublisher() + " | Enter new Publisher (Leave empty to skip):");
-        String newPublisher = scanner.nextLine().trim();
-        logger.logAction("Update book state", "Current Book States: " + book.getState() + " | Enter number to chose Book State (1: Exists, 2: Borrowed, 3: Banned, Leave empty to skip):");
-        String bookStateString = scanner.nextLine().trim();
+    private int readUpdatedTotalCopies(LibraryItem itemToUpdate) {
+        logger.logAction("Prompt", "Current Total Copies: " + itemToUpdate.getTotalCopies() + " | Enter new Total Copies (Leave empty to keep):");
+        String input = scanner.nextLine().trim();
+        if (input.isEmpty())
+            return itemToUpdate.getTotalCopies();
 
-        if (!newIsbn.isEmpty() && !newPublisher.isEmpty() && !bookStateString.isEmpty()) {
-            int bookState;
-
-            try {
-                bookState = Integer.parseInt(bookStateString);
-            } catch (NumberFormatException e) {
-                logger.logAction("Error", "Invalid parameter (ISBN, Book State)");
-                return;
-            }
-
-            String oldTitle = book.getTitle();
-            book.setTitle(newTitle);
-            book.setAuthor(newAuthor);
-            book.setYearOfPublication(yearOfPublication);
-            book.setISBN(newIsbn);
-            book.setPublisher(newPublisher);
-            book.setState(BookState.fromValue(bookState));
-            manager.addItem(book.getUUID(), book);
-            logger.logAction("Success", "Item " + oldTitle + " successfully updated.");
+        try {
+            int totalCopies = Integer.parseInt(input);
+            return totalCopies > 0 ? totalCopies : null;
+        } catch (NumberFormatException e) {
+            return 0;
         }
     }
 
-    private void updateMagazineSpecifics(Magazine magazine, String newTitle, String newAuthor,
-                                         int yearOfPublication) {
-        logger.logAction("Update ISSN", "Current ISSN: " + magazine.getISSN() + " | Enter new ISSN (Leave empty to skip):");
+    private void updateBookSpecifics(Book book) {
+        logger.logAction("Prompt", "Current ISBN: " + book.getISBN() + " | Enter new ISBN (Leave empty to keep):");
+        String newIsbn = scanner.nextLine().trim();
+        logger.logAction("Prompt", "Current Publisher: " + book.getPublisher() + " | Enter new Publisher (Leave empty to keep):");
+        String newPublisher = scanner.nextLine().trim();
+        logger.logAction("Prompt", "Current Book State: " + book.getState() + " | Enter state (1=Exists, 2=Borrowed, 3=Banned, Leave empty to keep):");
+        String bookStateString = scanner.nextLine().trim();
+
+        if (!newIsbn.isEmpty())
+            book.setISBN(newIsbn);
+        if (!newPublisher.isEmpty())
+            book.setPublisher(newPublisher);
+
+        if (!bookStateString.isEmpty()) {
+            try {
+                int bookStateValue = Integer.parseInt(bookStateString);
+                book.setState(BookState.fromValue(bookStateValue));
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Invalid book state value.");
+            }
+        }
+    }
+
+    private void updateMagazineSpecifics(Magazine magazine) {
+        logger.logAction("Prompt", "Current ISSN: " + magazine.getISSN() + " | Enter new ISSN (Leave empty to keep):");
         String newISSN = scanner.nextLine().trim();
-        logger.logAction("Update volume number", "Current Volume: " + magazine.getVolumeNumber() + " | Enter new Volume Number (Leave empty to skip):");
+        logger.logAction("Prompt", "Current Volume: " + magazine.getVolumeNumber() + " | Enter new Volume Number (Leave empty to keep):");
         String newVolume = scanner.nextLine().trim();
-        logger.logAction("Update issue number", "Current Issue: " + magazine.getIssueNumber() + " | Enter new Issue Number (Leave empty to skip):");
+        logger.logAction("Prompt", "Current Issue: " + magazine.getIssueNumber() + " | Enter new Issue Number (Leave empty to keep):");
         String newIssue = scanner.nextLine().trim();
+
         if (!newISSN.isEmpty())
             magazine.setISSN(newISSN);
 
-        if (!newISSN.isEmpty() && !newVolume.isEmpty() && !newIssue.isEmpty()) {
-            int finalVolume;
-            int finalIssue;
-
+        if (!newVolume.isEmpty()) {
             try {
-                finalVolume = Integer.parseInt(newVolume);
-                finalIssue = Integer.parseInt(newIssue);
+                magazine.setVolumeNumber(Integer.parseInt(newVolume));
             } catch (NumberFormatException e) {
-                logger.logAction("Error", "Invalid parameter (volume or issue number).");
-                return;
+                throw new IllegalArgumentException("Invalid volume number.");
             }
-            String oldTitle = magazine.getTitle();
-            magazine.setTitle(newTitle);
-            magazine.setAuthor(newAuthor);
-            magazine.setYearOfPublication(yearOfPublication);
-            magazine.setISSN(newISSN);
-            magazine.setVolumeNumber(finalVolume);
-            magazine.setIssueNumber(finalIssue);
-            manager.addItem(magazine.getUUID(), magazine);
-            logger.logAction("Success", "Item " + oldTitle + " successfully updated.");
+        }
+
+        if (!newIssue.isEmpty()) {
+            try {
+                magazine.setIssueNumber(Integer.parseInt(newIssue));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid issue number.");
+            }
         }
     }
 
-    private void updateThesisSpecifics(Thesis thesis, String newTitle, String newAuthor,
-                                       int yearOfPublication) {
-        logger.logAction("Update university name", "Current University: " + thesis.getUniversityName() + " | Enter new University Name (Leave empty to skip):");
+    private void updateThesisSpecifics(Thesis thesis) {
+        logger.logAction("Prompt", "Current University: " + thesis.getUniversityName() + " | Enter new University Name (Leave empty to keep):");
         String newUniversity = scanner.nextLine().trim();
-        logger.logAction("Update advisor name", "Current Advisor: " + thesis.getAdvisorName() + " | Enter new Advisor Name (Leave empty to skip):");
+        logger.logAction("Prompt", "Current Advisor: " + thesis.getAdvisorName() + " | Enter new Advisor Name (Leave empty to keep):");
         String newAdvisor = scanner.nextLine().trim();
-        logger.logAction("Update degree level", "Current Degree Level: " + thesis.getDegreeLevel() + " | Enter new Degree Level (Leave empty to skip):");
+        logger.logAction("Prompt", "Current Degree Level: " + thesis.getDegreeLevel() + " | Enter new Degree Level (Leave empty to keep):");
         String newDegreeLevel = scanner.nextLine().trim();
 
-        if (!newUniversity.isEmpty() && !newAdvisor.isEmpty() && !newDegreeLevel.isEmpty()) {
-            String oldTitle = thesis.getTitle();
-            thesis.setTitle(newTitle);
-            thesis.setAuthor(newAuthor);
-            thesis.setYearOfPublication(yearOfPublication);
+        if (!newUniversity.isEmpty())
             thesis.setUniversityName(newUniversity);
+        if (!newAdvisor.isEmpty())
             thesis.setAdvisorName(newAdvisor);
+        if (!newDegreeLevel.isEmpty())
             thesis.setDegreeLevel(newDegreeLevel);
-            manager.addItem(thesis.getUUID(), thesis);
-            logger.logAction("Success", "Item " + oldTitle + " successfully updated.");
-        }
     }
 
-    private void updateReferenceSpecifics(ReferenceBook refBook, String newTitle, String newAuthor,
-                                          int yearOfPublication) {
-        logger.logAction("Update ISBN", "Current ISBN: " + refBook.getISBN() + " | Enter new ISBN (Leave empty to skip):");
+    private void updateReferenceSpecifics(ReferenceBook refBook) {
+        logger.logAction("Prompt", "Current ISBN: " + refBook.getISBN() + " | Enter new ISBN (Leave empty to keep):");
         String newISBN = scanner.nextLine().trim();
-        logger.logAction("Update Edition number", "Current Edition: " + refBook.getEditionNumber() + " | Enter new Edition Number (Leave empty to skip):");
+        logger.logAction("Prompt", "Current Edition: " + refBook.getEditionNumber() + " | Enter new Edition Number (Leave empty to keep):");
         String newEdition = scanner.nextLine().trim();
-        logger.logAction("Update is lendable", "Is Lendable (true/false) (Current: " + refBook.isLendable() + ") | Enter new value (Leave empty to skip):");
+        logger.logAction("Prompt", "Is Lendable (true/false) (Current: " + refBook.isLendable() + ") | Enter new value (Leave empty to keep):");
         String newLendable = scanner.nextLine().trim();
 
-        if (!newISBN.isEmpty() && !newEdition.isEmpty() && !newLendable.isEmpty()) {
-            int finalEdition;
-            boolean isLendable;
-
-            try {
-                finalEdition = Integer.parseInt(newEdition);
-                isLendable = Boolean.parseBoolean(newLendable);
-            } catch (NumberFormatException e) {
-                logger.logAction("Error", "Invalid parameter (Year, Edition Number, Lendable).");
-                return;
-            }
-
-            String oldTitle = refBook.getTitle();
-            refBook.setTitle(newTitle);
-            refBook.setAuthor(newAuthor);
-            refBook.setYearOfPublication(yearOfPublication);
+        if (!newISBN.isEmpty())
             refBook.setISBN(newISBN);
-            refBook.setEditionNumber(finalEdition);
-            refBook.setLendable(isLendable);
-            manager.addItem(refBook.getUUID(), refBook);
-            logger.logAction("Success", "Item " + oldTitle + " successfully updated.");
+
+        if (!newEdition.isEmpty()) {
+            try {
+                refBook.setEditionNumber(Integer.parseInt(newEdition));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid edition number.");
+            }
+        }
+
+        if (!newLendable.isEmpty()) {
+            if (!newLendable.equalsIgnoreCase("true") && !newLendable.equalsIgnoreCase("false"))
+                throw new IllegalArgumentException("Invalid lendable value (expected true/false).");
+
+            refBook.setLendable(Boolean.parseBoolean(newLendable));
         }
     }
 }
