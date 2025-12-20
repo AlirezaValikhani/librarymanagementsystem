@@ -34,7 +34,6 @@ public class LibraryItemUpdater {
 
         try {
             CommonDetails details = getCommonDetails(itemToUpdate);
-
             if (details.getYear() == 0) {
                 logger.logAction("Update canceled", "Invalid year of publication.");
                 return;

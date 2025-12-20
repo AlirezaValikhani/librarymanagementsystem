@@ -32,13 +32,10 @@ public class LibraryItemCreator {
 
         if (itemType == null)
             return;
-
-
         if (commonDetails == null)
             return;
 
         LibraryItemCreateRequest request = routeTypeToMakeRequest(itemType, commonDetails);
-
         if (request == null) {
             logger.logAction("Error", "Invalid item details. Operation canceled.");
             return;
