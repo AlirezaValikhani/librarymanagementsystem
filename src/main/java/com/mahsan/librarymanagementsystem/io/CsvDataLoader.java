@@ -4,7 +4,6 @@ import com.mahsan.librarymanagementsystem.exception.MissingParametersException;
 import com.mahsan.librarymanagementsystem.model.LibraryManager;
 import com.mahsan.librarymanagementsystem.model.base.LibraryItem;
 import com.mahsan.librarymanagementsystem.model.dto.*;
-import com.mahsan.librarymanagementsystem.model.enums.BookState;
 import com.mahsan.librarymanagementsystem.model.enums.LibraryItemType;
 
 import java.io.*;
@@ -68,44 +67,4 @@ public class CsvDataLoader {
             throw new com.mahsan.librarymanagementsystem.exception.IOException("Error loading file: " + e.getMessage());
         }
     }
-
-//    private LibraryItemCreateRequest buildRequest(LibraryItemType type, String[] details) {
-//        try {
-//            String title = details[0].trim();
-//            String author = details[1].trim();
-//            int year = Integer.parseInt(details[2].trim());
-//            int totalCopies = Integer.parseInt(details[3].trim());
-//
-//            return switch (type) {
-//                case BOOK -> {
-//                    BookState state = BookState.fromValue(Integer.parseInt(details[4].trim()));
-//                    String isbn = details[5].trim();
-//                    String publisher = details[6].trim();
-//                    yield new BookCreateRequest(title, author, year, totalCopies, state, isbn, publisher);
-//                }
-//                case MAGAZINE -> {
-//                    String issn = details[4].trim();
-//                    int volume = Integer.parseInt(details[5].trim());
-//                    int issue = Integer.parseInt(details[6].trim());
-//                    yield new MagazineCreateRequest(title, author, year, totalCopies, issn, volume, issue);
-//                }
-//                case THESIS -> {
-//                    String university = details[4].trim();
-//                    String degree = details[5].trim();
-//                    String advisor = details[6].trim();
-//                    yield new ThesisCreateRequest(title, author, year, totalCopies, university, degree, advisor);
-//                }
-//                case REFERENCE -> {
-//                    String refIsbn = details[4].trim();
-//                    int edition = Integer.parseInt(details[5].trim());
-//                    boolean lendable = Boolean.parseBoolean(details[6].trim());
-//                    yield new ReferenceBookCreateRequest(title, author, year, totalCopies, refIsbn, edition, lendable);
-//                }
-//                default -> null;
-//            };
-//        } catch (Exception e) {
-//            logger.logAction("Error", "Invalid parameters: " + e.getMessage());
-//            return null;
-//        }
-//    }
 }
